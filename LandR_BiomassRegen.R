@@ -146,44 +146,59 @@ FireDisturbance = function(sim) {
   
   ## reclassify pixel groups as burnt (0L) 
   sim$pixelGroupMap[sim$burnLoci] <- 0L # 0 is the fire burnt pixels without regenerations
+  
+  ## make table spp/ecoregionGroup/age in burnt pixels
   burnedcohortData <- sim$cohortData[pixelGroup %in% burnPixelGroup]
   set(burnedcohortData, ,c("B", "mortality", "aNPPAct"), NULL)
   #   set(burnedcohortData, ,c("sumB", "siteShade"), 0) # assume the fire burns all cohorts on site
   setkey(burnedcohortData, speciesCode)
+  
+  ## subset spp with serotiny
   tempspecies <- sim$species[postfireregen == "serotiny",
                              .(speciesCode, postfireregen)]
+  
+  ## join tables to make a serotiny table
   serotinyAssessCohortData <- burnedcohortData[tempspecies, nomatch = 0][, postfireregen := NULL]
   
   rm(tempspecies)
   if (NROW(serotinyAssessCohortData) > 0) {
-    # assess potential serotiny reg
+    ## assess potential serotiny reg: add sexual maturity to the table and compare w/ age
+    ## as long as one cohort is sexually mature, serotiny is activated
     serotinyAssessCohortData <- setkey(serotinyAssessCohortData, speciesCode)[sim$species[,.(speciesCode, sexualmature)],
                                                                               nomatch = 0]
     newCohortData <- serotinyAssessCohortData[age >= sexualmature] %>% # NOTE should be in mortalityFromDisturbance module or event
-      unique(., by = c("pixelGroup", "speciesCode"))
+      unique(., by = c("pixelGroup", "speciesCode"))  
     set(newCohortData, ,"sexualmature", NULL)
-    # select the pixels that have potential serotiny regeneration and assess them
+    
+    ## select the pixels that have potential serotiny regeneration and assess them
     serotinyPixelTable <- firePixelTable[pixelGroup %in% unique(newCohortData$pixelGroup)]
     
-    # from now on the regeneration process is assessed for each potential pixel
+    ## from now on the regeneration process is assessed for each potential pixel
     setkey(serotinyPixelTable, pixelGroup)
     setkey(newCohortData, pixelGroup)
-    newCohortData <- serotinyPixelTable[newCohortData, nomatch = 0, allow.cartesian = TRUE]
+    newCohortData <- serotinyPixelTable[newCohortData, nomatch = 0, allow.cartesian = TRUE] ## join table to add pixels
     
-    # light check
+    ## light check: add shade tolerance to table and set shade to 0 (100% mortality.)
+    ## the get survival probs and subset survivors with runif
     newCohortData <- setkey(newCohortData, speciesCode)[sim$species[,.(speciesCode, shadetolerance)],
-                                                        nomatch = 0][,siteShade := 0]
+                                                        nomatch = 0][, siteShade := 0]
     newCohortData <- assignLightProb(sufficientLight = sim$sufficientLight,
                                      newCohortData)
-    newCohortData <- newCohortData[lightProb %>>% runif(nrow(newCohortData), 0, 1),]
-    set(newCohortData, ,c("shadetolerance", "siteShade", "lightProb"), NULL)
+    newCohortData <- newCohortData[lightProb %>>% runif(nrow(newCohortData), 0, 1)]  ## subset survivors
+    set(newCohortData, ,c("shadetolerance", "siteShade", "lightProb"), NULL)   ## clean table again
+    
+    ## get establishment probs and subset species that establish with runif 
     specieseco_current <- sim$speciesEcoregion[year <= round(time(sim))]
     specieseco_current <- specieseco_current[year == max(specieseco_current$year),
                                              .(ecoregionGroup, speciesCode, establishprob)]
-    newCohortData <- setkey(newCohortData, ecoregionGroup, speciesCode)[specieseco_current, nomatch = 0]
-    newCohortData <- newCohortData[(runif(nrow(newCohortData), 0, 1)) %<<% establishprob][, establishprob := NULL]
+    newCohortData <- setkey(newCohortData, ecoregionGroup, speciesCode)[specieseco_current, nomatch = 0]  ## join table to add probs
+    newCohortData <- newCohortData[establishprob  %>>% runif(nrow(newCohortData), 0, 1)][, establishprob := NULL]
+    
+    ## only need one cohort per spp per pixel survives/establishes
     newCohortData <- unique(newCohortData, by = c("pixelIndex", "speciesCode"))
+    
     if (NROW(newCohortData) > 0) {
+      ## rm age
       newCohortData <- newCohortData[,.(pixelGroup, ecoregionGroup, speciesCode, pixelIndex)] #
       if(P(sim)$calibrate){
         serotinyRegenSummary <- newCohortData[,.(numberOfRegen = length(pixelIndex)), by = speciesCode]
@@ -197,6 +212,7 @@ FireDisturbance = function(sim) {
       }
       serotinyPixel <- unique(newCohortData$pixelIndex) # save the pixel index for resprouting assessment use,
       # i.e., removing these pixel from assessing resprouting
+      ## append table to (yet empty) postFireReproData
       postFireReproData <- rbindlist(list(postFireReproData, newCohortData))
     } else {
       serotinyPixel <- NULL
@@ -210,7 +226,9 @@ FireDisturbance = function(sim) {
   #############################################################
   # from now on, starting assessing resprouting reproduction:
   # basically same thing as serotiny
-  # remove the pixels that had successful serotiny regeneration
+  # remove the pixels that had successful serotiny regeneration (antijoin)
+  
+  ## make a table of pixels where resprouting occurs.
   if (is.null(serotinyPixel)) {
     resproutingPixelTable <- setkey(firePixelTable, pixelGroup)
   } else {
@@ -219,6 +237,8 @@ FireDisturbance = function(sim) {
                                                                 by = "pixelIndex")),
                                     pixelGroup)
   }
+  
+  ## assess whether reprouting can occur in burnt pixels
   setkey(burnedcohortData, speciesCode)
   species_temp <- sim$species[postfireregen == "resprout",
                               .(speciesCode, postfireregen,
@@ -226,20 +246,27 @@ FireDisturbance = function(sim) {
   resproutingAssessCohortData <- burnedcohortData[species_temp, nomatch = 0][age >= resproutage_min & age <= resproutage_max]
   set(resproutingAssessCohortData, ,c("resproutage_min", "resproutage_max", "postfireregen", "age"), NULL)
   rm(species_temp)
+  
   if (NROW(resproutingAssessCohortData) > 0) {
+    ## assess potential resprouting reg: add reprout probability, siteShade/tolerance to the table and assess who resprouts
+    ## as long as one cohort can resprout, resprouting is activated
     resproutingAssessCohortData <- unique(resproutingAssessCohortData, by = c("pixelGroup", "speciesCode"))
     setkey(resproutingAssessCohortData, pixelGroup)
+    
+    ## make new table joing resprouters with burnt pixels
     newCohortData <- resproutingPixelTable[resproutingAssessCohortData, nomatch = 0, allow.cartesian = TRUE]
+    
+    ## light check: add shade tolerance to table and set shade to 0 (100% mortality.)
+    ## the get survival probs and subset survivors with runif
     newCohortData <- setkey(newCohortData, speciesCode)[sim$species[,.(speciesCode, shadetolerance)],
                                                         nomatch = 0][, siteShade := 0]
-    
-    # Light check
     newCohortData <- assignLightProb(sufficientLight = sim$sufficientLight,
                                      newCohortData)
-    newCohortData <- newCohortData[lightProb %>>% runif(nrow(newCohortData), 0, 1),]
-    newCohortData <- newCohortData[runif(nrow(newCohortData), 0, 1) %<<% newCohortData$resproutprob]
+    newCohortData <- newCohortData[lightProb %>>% runif(nrow(newCohortData), 0, 1)]
+    newCohortData <- newCohortData[newCohortData$resproutprob %>>% runif(nrow(newCohortData), 0, 1)]
     newCohortData <- unique(newCohortData, by = c("pixelIndex", "speciesCode"))
     set(newCohortData, ,c("resproutprob", "shadetolerance", "siteShade", "lightProb"), NULL)
+    
     # remove all columns that were used temporarily here
     if (NROW(newCohortData) > 0) {
       newCohortData <- newCohortData[,.(pixelGroup, ecoregionGroup, speciesCode, pixelIndex)]#
@@ -253,6 +280,7 @@ FireDisturbance = function(sim) {
         setnames(resproutRegenSummary, "speciesCode", "species")
         sim$postFireRegenSummary <- rbindlist(list(sim$postFireRegenSummary, resproutRegenSummary))
       }
+      ## append resprouters to the table
       postFireReproData <- rbindlist(list(postFireReproData, newCohortData))
       postFirePixel <- c(serotinyPixel, unique(newCohortData$pixelIndex))
       sim$postFirePixel <- postFirePixel # send it to a sim object
@@ -265,14 +293,19 @@ FireDisturbance = function(sim) {
     postFireReproData <- postFireReproData
     sim$postFirePixel <- serotinyPixel
   }
+  
+  ## add new cohorts to pixels where serotiny/regeneration were activated
   if (NROW(postFireReproData) > 0) {
     maxPixelGroup <- as.integer(maxValue(sim$pixelGroupMap))
+    
+    ## redo post-fire pixel groups by adding the maxPixelGroup to their ecoregioMap values
     if (!is.null(sim$postFirePixel)) {
       sim$pixelGroupMap[sim$postFirePixel] <- maxPixelGroup +
         as.integer(as.factor(sim$ecoregionMap[sim$postFirePixel]))
       postFireReproData[, pixelGroup := maxPixelGroup +
                           as.integer(as.factor(postFireReproData$ecoregionGroup))]
     }
+    
     sim$cohortData[,sumB := sum(B, na.rm = TRUE), by = pixelGroup]
     addnewcohort <- addNewCohorts(postFireReproData, sim$cohortData, sim$pixelGroupMap,
                                   time = round(time(sim)), speciesEcoregion = sim$speciesEcoregion)
