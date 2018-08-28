@@ -32,8 +32,8 @@ defineModule(sim, list(
                  desc = "a table that has species traits such as longevity...",
                  sourceURL = "https://raw.githubusercontent.com/LANDIS-II-Foundation/Extensions-Succession/master/biomass-succession-archive/trunk/tests/v6.0-2.0/species.txt"),
     expectsInput(objectName = "cohortData", objectClass = "data.table",
-                  desc = "age cohort-biomass table hooked to pixel group map by pixelGroupIndex at
-                  succession time step"),
+                 desc = "age cohort-biomass table hooked to pixel group map by pixelGroupIndex at
+                 succession time step"),
     expectsInput(objectName = "sufficientLight", objectClass = "data.frame",
                  desc = "table defining how the species with different shade tolerance respond to stand shadeness",
                  sourceURL = "https://raw.githubusercontent.com/LANDIS-II-Foundation/Extensions-Succession/master/biomass-succession-archive/trunk/tests/v6.0-2.0/biomass-succession_test.txt"),
@@ -48,14 +48,14 @@ defineModule(sim, list(
     expectsInput(objectName = "pixelGroupMap", objectClass = "RasterLayer",
                  desc = "updated community map at each succession time step"),
     expectsInput(objectName = "inactivePixelIndex", objectClass = "logical",
-                  desc = "internal use. Keeps track of which pixels are inactive"),
+                 desc = "internal use. Keeps track of which pixels are inactive"),
     expectsInput(objectName = "shpStudySubRegion", objectClass = "SpatialPolygonsDataFrame",
                  desc = "this shape file contains two informaton: Sub study area with fire return interval attribute. 
                  Defaults to a shapefile in Southwestern Alberta, Canada", sourceURL = ""),
     expectsInput(objectName = "shpStudyRegionFull", objectClass = "SpatialPolygonsDataFrame",
                  desc = "this shape file contains two informaton: Full study area with fire return interval attribute.
                  Defaults to a shapefile in Southwestern Alberta, Canada", sourceURL = "")
-  ),
+    ),
   outputObjects = bind_rows(
     createsOutput(objectName = "cohortData", objectClass = "data.table",
                   desc = "age cohort-biomass table hooked to pixel group map by pixelGroupIndex at
@@ -73,8 +73,8 @@ defineModule(sim, list(
                   desc = "Year of the most recent fire year"),
     createsOutput(objectName = "firePixelTable", objectClass = "data.table",
                   desc = "table with pixels IDs that had fire and their corresponding pixel groups")
-  )
-))
+    )
+    ))
 
 ## event types
 #   - type `init` is required for initialiazation
@@ -85,7 +85,7 @@ doEvent.LandR_BiomassRegen = function(sim, eventTime, eventType) {
     init = {
       # do stuff for this event
       sim <- Init(sim)
-
+      
       ## schedule events
       if(!is.null(sim$rstCurrentBurn)){ # anything related to fire disturbance
         sim <- scheduleEvent(sim, P(sim)$fireInitialTime,
@@ -130,12 +130,12 @@ FireDisturbance = function(sim) {
   }
   
   if (!is.null(sim$rstCurrentBurn)) { # anything related to fire disturbance
-     if (extent(sim$rstCurrentBurn) != extent(sim$pixelGroupMap)) {
+    if (extent(sim$rstCurrentBurn) != extent(sim$pixelGroupMap)) {
       sim$rstCurrentBurn <- raster::crop(sim$rstCurrentBurn, extent(sim$pixelGroupMap))
     }
   }
   
-  ## extract burn pixel indices/groups and remve potentially innactive pixels
+  ## extract burn pixel indices/groups and remove potentially innactive pixels
   sim$burnLoci <- which(sim$rstCurrentBurn[] == 1)
   if (length(sim$inactivePixelIndex) > 0) {
     sim$burnLoci <- sim$burnLoci[!(sim$burnLoci %in% sim$inactivePixelIndex)] # this is to prevent avaluating the pixels that are inactive
@@ -145,11 +145,11 @@ FireDisturbance = function(sim) {
   burnPixelGroup <- unique(firePixelTable$pixelGroup)
   
   ## reclassify pixel groups as burnt (0L) 
-  sim$pixelGroupMap[sim$burnLoci] <- 0L # 0 is the fire burnt pixels without regenerations
+  sim$pixelGroupMap[sim$burnLoci] <- 0L
   
   ## make table spp/ecoregionGroup/age in burnt pixels
   burnedcohortData <- sim$cohortData[pixelGroup %in% burnPixelGroup]
-  set(burnedcohortData, ,c("B", "mortality", "aNPPAct"), NULL)
+  set(burnedcohortData, NULL, c("B", "mortality", "aNPPAct"), NULL)
   #   set(burnedcohortData, ,c("sumB", "siteShade"), 0) # assume the fire burns all cohorts on site
   setkey(burnedcohortData, speciesCode)
   
@@ -168,7 +168,7 @@ FireDisturbance = function(sim) {
                                                                               nomatch = 0]
     newCohortData <- serotinyAssessCohortData[age >= sexualmature] %>% # NOTE should be in mortalityFromDisturbance module or event
       unique(., by = c("pixelGroup", "speciesCode"))  
-    set(newCohortData, ,"sexualmature", NULL)
+    set(newCohortData, NULL, "sexualmature", NULL)
     
     ## select the pixels that have potential serotiny regeneration and assess them
     serotinyPixelTable <- firePixelTable[pixelGroup %in% unique(newCohortData$pixelGroup)]
@@ -185,7 +185,7 @@ FireDisturbance = function(sim) {
     newCohortData <- assignLightProb(sufficientLight = sim$sufficientLight,
                                      newCohortData)
     newCohortData <- newCohortData[lightProb %>>% runif(nrow(newCohortData), 0, 1)]  ## subset survivors
-    set(newCohortData, ,c("shadetolerance", "siteShade", "lightProb"), NULL)   ## clean table again
+    set(newCohortData, NULL, c("shadetolerance", "siteShade", "lightProb"), NULL)   ## clean table again
     
     ## get establishment probs and subset species that establish with runif 
     specieseco_current <- sim$speciesEcoregion[year <= round(time(sim))]
@@ -244,7 +244,7 @@ FireDisturbance = function(sim) {
                               .(speciesCode, postfireregen,
                                 resproutage_min, resproutage_max, resproutprob)]
   resproutingAssessCohortData <- burnedcohortData[species_temp, nomatch = 0][age >= resproutage_min & age <= resproutage_max]
-  set(resproutingAssessCohortData, ,c("resproutage_min", "resproutage_max", "postfireregen", "age"), NULL)
+  set(resproutingAssessCohortData, NULL, c("resproutage_min", "resproutage_max", "postfireregen", "age"), NULL)
   rm(species_temp)
   
   if (NROW(resproutingAssessCohortData) > 0) {
@@ -265,7 +265,7 @@ FireDisturbance = function(sim) {
     newCohortData <- newCohortData[lightProb %>>% runif(nrow(newCohortData), 0, 1)]
     newCohortData <- newCohortData[newCohortData$resproutprob %>>% runif(nrow(newCohortData), 0, 1)]
     newCohortData <- unique(newCohortData, by = c("pixelIndex", "speciesCode"))
-    set(newCohortData, ,c("resproutprob", "shadetolerance", "siteShade", "lightProb"), NULL)
+    set(newCohortData, NULL, c("resproutprob", "shadetolerance", "siteShade", "lightProb"), NULL)
     
     # remove all columns that were used temporarily here
     if (NROW(newCohortData) > 0) {
@@ -306,7 +306,8 @@ FireDisturbance = function(sim) {
                           as.integer(as.factor(postFireReproData$ecoregionGroup))]
     }
     
-    sim$cohortData[,sumB := sum(B, na.rm = TRUE), by = pixelGroup]
+    ## regenerate biomass in pixels that have serotiny/resprouting
+    sim$cohortData[, sumB := sum(B, na.rm = TRUE), by = pixelGroup]
     addnewcohort <- addNewCohorts(postFireReproData, sim$cohortData, sim$pixelGroupMap,
                                   time = round(time(sim)), speciesEcoregion = sim$speciesEcoregion)
     sim$cohortData <- addnewcohort$cohortData
@@ -322,7 +323,7 @@ FireDisturbance = function(sim) {
 
 .inputObjects <- function(sim) {
   dPath <- dataPath(sim)
-
+  
   if (!suppliedElsewhere("shpStudyRegionFull", sim)) {
     message("'shpStudyRegionFull' was not provided by user. Using a polygon in Southwestern Alberta, Canada")
     
