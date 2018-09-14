@@ -136,7 +136,7 @@ FireDisturbance = function(sim) {
   }
   
   ## extract burn pixel indices/groups and remove potentially innactive pixels
-  sim$burnLoci <- which(!is.na(getValues(sim$rstCurrentBurn))
+  sim$burnLoci <- which(!is.na(getValues(sim$rstCurrentBurn)))
   if (length(sim$inactivePixelIndex) > 0) {
     sim$burnLoci <- sim$burnLoci[!(sim$burnLoci %in% sim$inactivePixelIndex)] # this is to prevent avaluating the pixels that are inactive
   }
