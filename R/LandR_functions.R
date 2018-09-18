@@ -52,9 +52,9 @@ addNewCohorts <- function(newCohortData, cohortData, pixelGroupMap, time, specie
   newCohortData <- newCohortData[,pixelGroup:=NULL][newCohortDataExtra][,pixelIndex := NULL] ## replace old IDs
   newCohortData <- unique(newCohortData, by = c("newpixelGroup", "speciesCode"))
   
-  ## extract total pix group biomass, and join to new data - WHY there are no common pixIDs?
-  sumTable <- cohortData[, .(pixelGroup,sumB)] %>% 
-    unique(, by = c("pixelGroup"))
+  ## extract total pix group biomass, and join to new data - Ceres: why there are no common pixIDs?
+  sumTable <- cohortData[, .(pixelGroup, sumB)] %>% 
+    unique(., by = c("pixelGroup"))
   newCohortData <- dplyr::left_join(newCohortData, sumTable, by = "pixelGroup") %>% data.table()
   newCohortData[is.na(sumB),sumB:=0]
   set(cohortData, NULL,"sumB", NULL)
