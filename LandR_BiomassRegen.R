@@ -5,9 +5,7 @@
 # in R packages. If exact location is required, functions will be: sim$<moduleName>$FunctionName
 defineModule(sim, list(
   name = "LandR_BiomassRegen",
-  description = "Post-disturbance biomass regeneration module for LandR. Simulates ost-fire mortality, regeneration and serotiny
-  as part of the same event - all occurring sequentially immeadiately after fire. Mortality assumed to be 100%, serotiny and regeneration
-  algorythms taken from LANDIS-II Biomass Succession extension, v.?",
+  description = "Post-disturbance biomass regeneration module for LandR. Simulates post-fire mortality, regeneration and serotiny as part of the same event - all occurring sequentially immeadiately after fire. Mortality assumed to be 100%, serotiny and regeneration algorithms taken from LANDIS-II Biomass Succession extension, v3.6.1",
   keywords = c("biomass regeneration", "LandR", "disturbance", "mortality", "vegetation succession", "vegetation model"),
   authors = person("Ceres", "Barros", email = "cbarros@mail.ubc.ca", role = c("aut", "cre")),
   childModules = character(0),
@@ -324,36 +322,36 @@ FireDisturbance = function(sim) {
 .inputObjects <- function(sim) {
   dPath <- dataPath(sim)
   
-  if (!suppliedElsewhere("shpStudyAreaLarge", sim)) {
-    message("'shpStudyAreaLarge' was not provided by user. Using a polygon in Southwestern Alberta, Canada")
+  if (!suppliedElsewhere("shpStudyArea", sim)) {
+    message("'shpStudyArea' was not provided by user. Using a polygon in Southwestern Alberta, Canada")
     
     canadaMap <- Cache(getData, 'GADM', country = 'CAN', level = 1, path = asPath(dPath),
                        cacheRepo = getPaths()$cachePath, quick = FALSE) 
     smallPolygonCoords = list(coords = data.frame(x = c(-115.9022,-114.9815,-114.3677,-113.4470,-113.5084,-114.4291,-115.3498,-116.4547,-117.1298,-117.3140), 
                                                   y = c(50.45516,50.45516,50.51654,50.51654,51.62139,52.72624,52.54210,52.48072,52.11243,51.25310)))
     
-    sim$shpStudyAreaLarge <- SpatialPolygons(list(Polygons(list(Polygon(smallPolygonCoords$coords)), ID = "swAB_polygon")),
+    sim$shpStudyArea <- SpatialPolygons(list(Polygons(list(Polygon(smallPolygonCoords$coords)), ID = "swAB_polygon")),
                                               proj4string = crs(canadaMap))
     
     ## use CRS of biomassMap
-    sim$shpStudyAreaLarge <- spTransform(sim$shpStudyAreaLarge,
-                                          CRSobj = P(sim)$.crsUsed)
+    # sim$shpStudyArea <- spTransform(sim$shpStudyArea,
+    #                                       CRSobj = P(sim)$.crsUsed)
     
   }
   
-  if (!suppliedElsewhere("shpStudySubRegion", sim)) {
-    message("'shpStudyArea' was not provided by user. Using the same as 'shpStudyAreaLarge'")
-    sim$shpStudyArea <- sim$shpStudyAreaLarge
+  if (!suppliedElsewhere("shpStudyAreaLarge", sim)) {
+    message("'shpStudyAreaLarge' was not provided by user. Using the same as 'shpStudyArea'")
+    sim$shpStudyAreaLarge <- sim$shpStudyArea
   }
   
-  if (!identical(P(sim)$.crsUsed, crs(sim$shpStudyAreaLarge))) {
-    sim$shpStudyAreaLarge <- spTransform(sim$shpStudyAreaLarge, P(sim)$.crsUsed) #faster without Cache
-  }
+  # if (!identical(P(sim)$.crsUsed, crs(sim$shpStudyArea))) {
+  #   sim$shpStudyAreaLarge <- spTransform(sim$shpStudyAreaLarge, P(sim)$.crsUsed) #faster without Cache
+  # }
   
-  if (!identical(P(sim)$.crsUsed, crs(sim$shpStudyArea))) {
-    sim$shpStudyArea <- spTransform(sim$shpStudyArea, P(sim)$.crsUsed) #faster without Cache
-  }
-  
+  # if (!identical(P(sim)$.crsUsed, crs(sim$shpStudyArea))) {
+  #   sim$shpStudyArea <- spTransform(sim$shpStudyArea, P(sim)$.crsUsed) #faster without Cache
+  # }
+  # 
   ## get LANDISII main input table where species and light requirements tables come from
   if (!suppliedElsewhere("sufficientLight", sim) |
       (!suppliedElsewhere("species", sim))) {
