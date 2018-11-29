@@ -5,9 +5,7 @@
 # in R packages. If exact location is required, functions will be: sim$<moduleName>$FunctionName
 defineModule(sim, list(
   name = "LandR_BiomassRegen",
-  description = "Post-disturbance biomass regeneration module for LandR. Simulates ost-fire mortality, regeneration and serotiny
-  as part of the same event - all occurring sequentially immeadiately after fire. Mortality assumed to be 100%, serotiny and regeneration
-  algorythms taken from LANDIS-II Biomass Succession extension, v.?",
+  description = "Post-disturbance biomass regeneration module for LandR. Simulates post-fire mortality, regeneration and serotiny as part of the same event - all occurring sequentially immeadiately after fire. Mortality assumed to be 100%, serotiny and regeneration algorithms taken from LANDIS-II Biomass Succession extension, v3.6.1",
   keywords = c("biomass regeneration", "LandR", "disturbance", "mortality", "vegetation succession", "vegetation model"),
   authors = person("Ceres", "Barros", email = "cbarros@mail.ubc.ca", role = c("aut", "cre")),
   childModules = character(0),
@@ -49,12 +47,12 @@ defineModule(sim, list(
                  desc = "updated community map at each succession time step"),
     expectsInput(objectName = "inactivePixelIndex", objectClass = "logical",
                  desc = "internal use. Keeps track of which pixels are inactive"),
-    expectsInput(objectName = "shpStudySubRegion", objectClass = "SpatialPolygonsDataFrame",
-                 desc = "this shape file contains two informaton: Sub study area with fire return interval attribute. 
-                 Defaults to a shapefile in Southwestern Alberta, Canada", sourceURL = ""),
-    expectsInput(objectName = "shpStudyRegionFull", objectClass = "SpatialPolygonsDataFrame",
-                 desc = "this shape file contains two informaton: Full study area with fire return interval attribute.
-                 Defaults to a shapefile in Southwestern Alberta, Canada", sourceURL = "")
+    expectsInput("shpStudyArea", "SpatialPolygonsDataFrame",
+                 desc = "this shape file contains two informaton: Sub study area with fire return interval attribute",
+                 sourceURL = NA), # i guess this is study area and fire return interval
+    expectsInput("shpStudyAreaLarge", "SpatialPolygonsDataFrame",
+                 desc = "this shape file contains two informaton: Full study area with fire return interval attribute",
+                 sourceURL = NA) # i guess this is study area and fire return interval
     ),
   outputObjects = bind_rows(
     createsOutput(objectName = "cohortData", objectClass = "data.table",
@@ -62,8 +60,8 @@ defineModule(sim, list(
                   succession time step"),
     createsOutput(objectName = "pixelGroupMap", objectClass = "RasterLayer", 
                   desc = "updated community map at each succession time step"),
-    createsOutput(objectName = "rstCurrentBurn", objectClass = "list", 
-                  desc = "List of rasters of fire spread"),
+    createsOutput(objectName = "rstCurrentBurn", objectClass = "rasterLayer", 
+                  desc = "Binary raster of fire spread"),
     createsOutput(objectName = "burnLoci", objectClass = "numeric", desc = "Fire pixel IDs"), 
     createsOutput(objectName = "postFireRegenSummary", objectClass = "data.table", 
                   desc = "summary table of species post-fire regeneration"),
@@ -329,36 +327,36 @@ FireDisturbance = function(sim) {
 .inputObjects <- function(sim) {
   dPath <- dataPath(sim)
   
-  if (!suppliedElsewhere("shpStudyRegionFull", sim)) {
-    message("'shpStudyRegionFull' was not provided by user. Using a polygon in Southwestern Alberta, Canada")
+  if (!suppliedElsewhere("shpStudyArea", sim)) {
+    message("'shpStudyArea' was not provided by user. Using a polygon in Southwestern Alberta, Canada")
     
     canadaMap <- Cache(getData, 'GADM', country = 'CAN', level = 1, path = asPath(dPath),
                        cacheRepo = getPaths()$cachePath, quick = FALSE) 
     smallPolygonCoords = list(coords = data.frame(x = c(-115.9022,-114.9815,-114.3677,-113.4470,-113.5084,-114.4291,-115.3498,-116.4547,-117.1298,-117.3140), 
                                                   y = c(50.45516,50.45516,50.51654,50.51654,51.62139,52.72624,52.54210,52.48072,52.11243,51.25310)))
     
-    sim$shpStudyRegionFull <- SpatialPolygons(list(Polygons(list(Polygon(smallPolygonCoords$coords)), ID = "swAB_polygon")),
+    sim$shpStudyArea <- SpatialPolygons(list(Polygons(list(Polygon(smallPolygonCoords$coords)), ID = "swAB_polygon")),
                                               proj4string = crs(canadaMap))
     
     ## use CRS of biomassMap
-    sim$shpStudyRegionFull <- spTransform(sim$shpStudyRegionFull,
-                                          CRSobj = P(sim)$.crsUsed)
+    # sim$shpStudyArea <- spTransform(sim$shpStudyArea,
+    #                                       CRSobj = P(sim)$.crsUsed)
     
   }
   
-  if (!suppliedElsewhere("shpStudySubRegion", sim)) {
-    message("'shpStudySubRegion' was not provided by user. Using the same as 'shpStudyRegionFull'")
-    sim$shpStudySubRegion <- sim$shpStudyRegionFull
+  if (!suppliedElsewhere("shpStudyAreaLarge", sim)) {
+    message("'shpStudyAreaLarge' was not provided by user. Using the same as 'shpStudyArea'")
+    sim$shpStudyAreaLarge <- sim$shpStudyArea
   }
   
-  if (!identical(P(sim)$.crsUsed, crs(sim$shpStudyRegionFull))) {
-    sim$shpStudyRegionFull <- spTransform(sim$shpStudyRegionFull, P(sim)$.crsUsed) #faster without Cache
-  }
+  # if (!identical(P(sim)$.crsUsed, crs(sim$shpStudyArea))) {
+  #   sim$shpStudyAreaLarge <- spTransform(sim$shpStudyAreaLarge, P(sim)$.crsUsed) #faster without Cache
+  # }
   
-  if (!identical(P(sim)$.crsUsed, crs(sim$shpStudySubRegion))) {
-    sim$shpStudySubRegion <- spTransform(sim$shpStudySubRegion, P(sim)$.crsUsed) #faster without Cache
-  }
-  
+  # if (!identical(P(sim)$.crsUsed, crs(sim$shpStudyArea))) {
+  #   sim$shpStudyArea <- spTransform(sim$shpStudyArea, P(sim)$.crsUsed) #faster without Cache
+  # }
+  # 
   ## get LANDISII main input table where species and light requirements tables come from
   if (!suppliedElsewhere("sufficientLight", sim) |
       (!suppliedElsewhere("species", sim))) {
@@ -499,9 +497,9 @@ FireDisturbance = function(sim) {
     #                           fun = "raster::raster")
     
     ## Dummy version with spatial location in Canada
-    ras <- projectExtent(sim$shpStudySubRegion, crs = sim$shpStudySubRegion)
+    ras <- projectExtent(sim$shpStudyArea, crs = sim$shpStudyArea)
     res(ras) = 250
-    ecoregionMap <- rasterize(sim$shpStudySubRegion, ras)
+    ecoregionMap <- rasterize(sim$shpStudyArea, ras)
     
     ecoregionMap[!is.na(getValues(ecoregionMap))][] <- sample(ecoregion$mapcode, 
                                                               size = sum(!is.na(getValues(ecoregionMap))), 
