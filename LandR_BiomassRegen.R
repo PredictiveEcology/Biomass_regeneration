@@ -116,6 +116,10 @@ FireDisturbance = function(sim) {
   # 3. change of cohortdata and pixelgroup map
   # may be a supplemenatary function is needed to convert non-logical map
   # to a logical map
+  
+  ## make a copy of pixelGroupMap
+  pixelGroupMap <- sim$pixelGroupMap
+  
   postFireReproData <- data.table(pixelGroup = integer(), ecoregionGroup = numeric(),
                                   speciesCode = numeric(), pixelIndex = numeric())
   if(P(sim)$calibrate){
@@ -126,8 +130,8 @@ FireDisturbance = function(sim) {
   }
   
   if (!is.null(sim$rstCurrentBurn)) { # anything related to fire disturbance
-    if (extent(sim$rstCurrentBurn) != extent(sim$pixelGroupMap)) {
-      sim$rstCurrentBurn <- raster::crop(sim$rstCurrentBurn, extent(sim$pixelGroupMap))
+    if (extent(sim$rstCurrentBurn) != extent(pixelGroupMap)) {
+      sim$rstCurrentBurn <- raster::crop(sim$rstCurrentBurn, extent(pixelGroupMap))
     }
   }
   
@@ -137,11 +141,11 @@ FireDisturbance = function(sim) {
     sim$burnLoci <- sim$burnLoci[!(sim$burnLoci %in% sim$inactivePixelIndex)] # this is to prevent avaluating the pixels that are inactive
   }
   firePixelTable <- data.table(cbind(pixelIndex = sim$burnLoci,
-                                     pixelGroup = getValues(sim$pixelGroupMap)[sim$burnLoci]))
+                                     pixelGroup = getValues(pixelGroupMap)[sim$burnLoci]))
   burnPixelGroup <- unique(firePixelTable$pixelGroup)
   
   ## reclassify pixel groups as burnt (0L) 
-  sim$pixelGroupMap[sim$burnLoci] <- 0L
+  pixelGroupMap[sim$burnLoci] <- 0L
   
   ## make table spp/ecoregionGroup/age in burnt pixels
   burnedcohortData <- sim$cohortData[pixelGroup %in% burnPixelGroup]
@@ -228,6 +232,7 @@ FireDisturbance = function(sim) {
   if (is.null(serotinyPixel)) {
     resproutingPixelTable <- setkey(firePixelTable, pixelGroup)
   } else {
+    ## should be done by pixel and species
     resproutingPixelTable <- setkey(data.table(dplyr::anti_join(firePixelTable,
                                                                 data.table(cbind(pixelIndex = serotinyPixel)),
                                                                 by = "pixelIndex")),
@@ -292,11 +297,11 @@ FireDisturbance = function(sim) {
   
   ## add new cohorts to pixels where serotiny/regeneration were activated
   if (NROW(postFireReproData) > 0) {
-    maxPixelGroup <- as.integer(maxValue(sim$pixelGroupMap))
+    maxPixelGroup <- as.integer(maxValue(pixelGroupMap))
     
     ## redo post-fire pixel groups by adding the maxPixelGroup to their ecoregioMap values
     if (!is.null(sim$postFirePixel)) {
-      sim$pixelGroupMap[sim$postFirePixel] <- maxPixelGroup +
+      pixelGroupMap[sim$postFirePixel] <- maxPixelGroup +
         as.integer(as.factor(sim$ecoregionMap[sim$postFirePixel]))
       postFireReproData[, pixelGroup := maxPixelGroup +
                           as.integer(as.factor(postFireReproData$ecoregionGroup))]
@@ -304,7 +309,7 @@ FireDisturbance = function(sim) {
     
     ## regenerate biomass in pixels that have serotiny/resprouting
     sim$cohortData[, sumB := sum(B, na.rm = TRUE), by = pixelGroup]
-    addnewcohort <- addNewCohorts(postFireReproData, sim$cohortData, sim$pixelGroupMap,
+    addnewcohort <- addNewCohorts(postFireReproData, sim$cohortData, pixelGroupMap,
                                   time = round(time(sim)), speciesEcoregion = sim$speciesEcoregion)
     sim$cohortData <- addnewcohort$cohortData
     sim$pixelGroupMap <- setValues(addnewcohort$pixelGroupMap, as.integer(addnewcohort$pixelGroupMap[]))
