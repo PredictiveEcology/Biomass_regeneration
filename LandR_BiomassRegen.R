@@ -17,8 +17,6 @@ defineModule(sim, list(
   documentation = list("README.txt", "LandR_BiomassRegen.Rmd"),
   reqdPkgs = list(),
   parameters = rbind(
-    defineParameter(".crsUsed", "character", "+proj=lcc +lat_1=49 +lat_2=77 +lat_0=0 +lon_0=-95 +x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0",
-                    NA, NA, "CRS to be used. Defaults to the biomassMap projection"),
     defineParameter(name = "calibrate", class = "logical", default = FALSE, desc = "Do calibration? Defaults to FALSE"),
     defineParameter(name = "fireInitialTime", class = "numeric", default = 2L, 
                     desc = "The event time that the first fire disturbance event occurs"),
@@ -323,20 +321,17 @@ FireDisturbance = function(sim) {
   dPath <- dataPath(sim)
   
   if (!suppliedElsewhere("shpStudyArea", sim)) {
-    message("'shpStudyArea' was not provided by user. Using a polygon in Southwestern Alberta, Canada")
     
-    canadaMap <- Cache(getData, 'GADM', country = 'CAN', level = 1, path = asPath(dPath),
-                       cacheRepo = getPaths()$cachePath, quick = FALSE) 
-    smallPolygonCoords = list(coords = data.frame(x = c(-115.9022,-114.9815,-114.3677,-113.4470,-113.5084,-114.4291,-115.3498,-116.4547,-117.1298,-117.3140), 
-                                                  y = c(50.45516,50.45516,50.51654,50.51654,51.62139,52.72624,52.54210,52.48072,52.11243,51.25310)))
+    message("'shpStudyArea' was not provided by user. Using a polygon in southwestern Alberta, Canada,")
     
-    sim$shpStudyArea <- SpatialPolygons(list(Polygons(list(Polygon(smallPolygonCoords$coords)), ID = "swAB_polygon")),
-                                              proj4string = crs(canadaMap))
+    polyCenter <- SpatialPoints(coords = data.frame(x = c(-1349980), y = c(6986895)),
+                                proj4string = CRS(paste("+proj=lcc +lat_1=49 +lat_2=77 +lat_0=0 +lon_0=-95 +x_0=0 +y_0=0",
+                                                        "+datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0")))
     
-    ## use CRS of biomassMap
-    # sim$shpStudyArea <- spTransform(sim$shpStudyArea,
-    #                                       CRSobj = P(sim)$.crsUsed)
-    
+    seedToKeep <- .GlobalEnv$.Random.seed
+    set.seed(1234)
+    sim$shpStudyArea <- SpaDES.tools::randomPolygon(x = polyCenter, hectares = 10000)
+    .GlobalEnv$.Random.seed <- seedToKeep
   }
   
   if (!suppliedElsewhere("shpStudyAreaLarge", sim)) {
@@ -344,14 +339,7 @@ FireDisturbance = function(sim) {
     sim$shpStudyAreaLarge <- sim$shpStudyArea
   }
   
-  # if (!identical(P(sim)$.crsUsed, crs(sim$shpStudyArea))) {
-  #   sim$shpStudyAreaLarge <- spTransform(sim$shpStudyAreaLarge, P(sim)$.crsUsed) #faster without Cache
-  # }
-  
-  # if (!identical(P(sim)$.crsUsed, crs(sim$shpStudyArea))) {
-  #   sim$shpStudyArea <- spTransform(sim$shpStudyArea, P(sim)$.crsUsed) #faster without Cache
-  # }
-  # 
+
   ## get LANDISII main input table where species and light requirements tables come from
   if (!suppliedElsewhere("sufficientLight", sim) |
       (!suppliedElsewhere("species", sim))) {
@@ -492,7 +480,7 @@ FireDisturbance = function(sim) {
     #                           fun = "raster::raster")
     
     ## Dummy version with spatial location in Canada
-    ras <- projectExtent(sim$shpStudyArea, crs = sim$shpStudyArea)
+    ras <- projectExtent(sim$shpStudyArea, crs = crs(sim$shpStudyArea))
     res(ras) = 250
     ecoregionMap <- rasterize(sim$shpStudyArea, ras)
     
