@@ -17,7 +17,9 @@ defineModule(sim, list(
   reqdPkgs = list("data.table", "raster", ## TODO: update package list!
                   "PredictiveEcology/pemisc@development"),
   parameters = rbind(
-    defineParameter(".crsUsed", "character", "+proj=lcc +lat_1=49 +lat_2=77 +lat_0=0 +lon_0=-95 +x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0",
+    defineParameter(".crsUsed", "character",
+                    paste("+proj=lcc +lat_1=49 +lat_2=77 +lat_0=0 +lon_0=-95",
+                          "+x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0"),
                     NA, NA, "CRS to be used. Defaults to the biomassMap projection"),
     defineParameter("calibrate", "logical", FALSE, desc = "Do calibration? Defaults to FALSE"),
     defineParameter("fireInitialTime", "numeric", 2L,
@@ -59,29 +61,29 @@ defineModule(sim, list(
                  sourceURL = "https://raw.githubusercontent.com/LANDIS-II-Foundation/Extensions-Succession/master/biomass-succession-archive/trunk/tests/v6.0-2.0/biomass-succession_test.txt")
   ),
   outputObjects = bind_rows(
-    createsOutput("cohortData", "data.table",
-                  desc = "age cohort-biomass table hooked to pixel group map by pixelGroupIndex at
-                  succession time step"),
-    createsOutput("pixelGroupMap", "RasterLayer",
-                  desc = "updated community map at each succession time step"),
-    createsOutput("rstCurrentBurn", "rasterLayer",
-                  desc = "Binary raster of fire spread"),
     createsOutput("burnLoci", "numeric", desc = "Fire pixel IDs"),
-    createsOutput("postFireRegenSummary", "data.table",
-                  desc = "summary table of species post-fire regeneration"),
-    createsOutput("postFirePixel", "numeric",
-                  desc = "Pixels that were affected by fire"),
+    createsOutput("cohortData", "data.table",
+                  desc = paste("age cohort-biomass table hooked to pixel group map",
+                               "by pixelGroupIndex at succession time step")),
+    createsOutput("firePixelTable", "data.table",
+                  desc = "table with pixels IDs that had fire and their corresponding pixel groups"),
     createsOutput("lastFireYear", "numeric",
                   desc = "Year of the most recent fire year"),
-    createsOutput("firePixelTable", "data.table",
-                  desc = "table with pixels IDs that had fire and their corresponding pixel groups")
-    )
-    ))
+    createsOutput("pixelGroupMap", "RasterLayer",
+                  desc = "updated community map at each succession time step"),
+    createsOutput("postFirePixel", "numeric",
+                  desc = "Pixels that were affected by fire"),
+    createsOutput("postFireRegenSummary", "data.table",
+                  desc = "summary table of species post-fire regeneration"),
+    createsOutput("rstCurrentBurn", "rasterLayer",
+                  desc = "Binary raster of fire spread")
+  )
+))
 
 ## event types
 #   - type `init` is required for initialiazation
 
-doEvent.LandR_BiomassRegen = function(sim, eventTime, eventType) {
+doEvent.LandR_BiomassRegen <- function(sim, eventTime, eventType) {
   switch(
     eventType,
     init = {
@@ -115,7 +117,7 @@ Init <- function(sim) {
 }
 
 ## Fire disturbance regeneration event
-FireDisturbance = function(sim) {
+FireDisturbance <- function(sim) {
   # the presence of valid fire can cause three processes:
   # 1. remove species cohorts from the pixels that have been affected.
   # 2. initiate the post-fire regeneration
@@ -160,8 +162,7 @@ FireDisturbance = function(sim) {
   setkey(burnedcohortData, speciesCode)
 
   ## subset spp with serotiny
-  tempspecies <- sim$species[postfireregen == "serotiny",
-                             .(speciesCode, postfireregen)]
+  tempspecies <- sim$species[postfireregen == "serotiny", .(speciesCode, postfireregen)]
 
   ## join tables to make a serotiny table
   serotinyAssessCohortData <- burnedcohortData[tempspecies, nomatch = 0][, postfireregen := NULL]
