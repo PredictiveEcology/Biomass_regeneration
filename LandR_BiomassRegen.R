@@ -375,44 +375,15 @@ FireDisturbance <- function(sim) {
 
   #  # input species ecoregion dynamics table
   if (!suppliedElsewhere("speciesEcoregion", sim)) {
-    speciesEcoregion <- Cache(prepInputs,
-                              url = extractURL("speciesEcoregion"),
-                              fun = "utils::read.table",
-                              destinationPath = dPath,
-                              targetFile = "biomass-succession-dynamic-inputs_test.txt",
-                              fill = TRUE,
-                              sep = "",
-                              header = FALSE,
-                              blank.lines.skip = TRUE,
-                              stringsAsFactors = FALSE)
-    maxcol <- max(count.fields(file.path(dPath, "biomass-succession-dynamic-inputs_test.txt"),
-                               sep = ""))
-    colnames(speciesEcoregion) <- paste("col",1:maxcol, sep = "")
-    speciesEcoregion <- data.table(speciesEcoregion)
-    speciesEcoregion <- speciesEcoregion[col1 != "LandisData",]
-    speciesEcoregion <- speciesEcoregion[col1 != ">>",]
-    keepColNames <- c("year", "ecoregion", "species", "establishprob", "maxANPP", "maxB")
-    names(speciesEcoregion)[1:6] <- keepColNames
-    speciesEcoregion <- speciesEcoregion[, keepColNames, with = FALSE]
-    integerCols <- c("year", "establishprob", "maxANPP", "maxB")
-    speciesEcoregion[, (integerCols) := lapply(.SD, as.integer), .SDcols = integerCols]
-
-    ## rename species for compatibility across modules (Xxxx_xxx)
-    speciesEcoregion$species1 <- as.character(substring(speciesEcoregion$species, 1, 4))
-    speciesEcoregion$species2 <- as.character(substring(speciesEcoregion$species, 5, 7))
-    speciesEcoregion[, ':='(species = paste0(toupper(substring(species1, 1, 1)), substring(species1, 2, 4), "_",
-                                             species2))]
-
-    speciesEcoregion[, ':='(species1 = NULL, species2 = NULL)]
-
-    sim$speciesEcoregion <- speciesEcoregion
-    rm(maxcol)
+    sim$speciesEcoregion <- prepInputsSpeciesEcoregion(url = extractURL("speciesEcoregion"),
+                                                       dPath = dPath, cacheTags = cacheTags)
   }
 
   ## load ecoregion map
   if (!suppliedElsewhere("ecoregionMap", sim )) {
     ## LANDIS-II demo data:
 
+    ## TODO: restore the demo data version with prepInputs:
     # sim$ecoregionMap <- Cache(prepInputs,
     #                           url = extractURL("ecoregionMap"),
     #                           destinationPath = dPath,
@@ -421,8 +392,8 @@ FireDisturbance <- function(sim) {
 
     ## Dummy version with spatial location in Canada
     ras <- projectExtent(sim$studyArea, crs = sim$studyArea)
-    res(ras) <- 250
-    ecoregionMap <- rasterize(sim$studyArea, ras)
+    res(ras) <- 250 ## TODO: don't hardcode this; get from rasterToMatch?
+    ecoregionMap <- rasterize(sim$studyArea, ras) ## TODO: use fasterize
 
     ecoregionMap[!is.na(getValues(ecoregionMap))][] <- sample(ecoregion$mapcode,
                                                               size = sum(!is.na(getValues(ecoregionMap))),
@@ -432,4 +403,3 @@ FireDisturbance <- function(sim) {
 
   return(invisible(sim))
 }
-
