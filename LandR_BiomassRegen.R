@@ -17,10 +17,6 @@ defineModule(sim, list(
   reqdPkgs = list("data.table", "raster", ## TODO: update package list!
                   "PredictiveEcology/pemisc@development"),
   parameters = rbind(
-    defineParameter(".crsUsed", "character",
-                    paste("+proj=lcc +lat_1=49 +lat_2=77 +lat_0=0 +lon_0=-95",
-                          "+x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0"),
-                    NA, NA, "CRS to be used. Defaults to the biomassMap projection"),
     defineParameter("calibrate", "logical", FALSE, desc = "Do calibration? Defaults to FALSE"),
     defineParameter("fireInitialTime", "numeric", 2L,
                     desc = "The event time that the first fire disturbance event occurs"),
@@ -331,7 +327,7 @@ FireDisturbance <- function(sim) {
 
 .inputObjects <- function(sim) {
   dPath <- dataPath(sim)
-
+  
   if (!suppliedElsewhere("studyArea", sim)) {
     message("'studyArea' was not provided by user. Using a polygon in Southwestern Alberta, Canada")
 
@@ -346,11 +342,6 @@ FireDisturbance <- function(sim) {
 
     sim$studyArea <- SpatialPolygons(list(Polygons(list(Polygon(smallPolygonCoords$coords)), ID = "swAB_polygon")),
                                               proj4string = crs(canadaMap))
-
-    ## use CRS of biomassMap
-    # sim$studyArea <- spTransform(sim$studyArea,
-    #                                       CRSobj = P(sim)$.crsUsed)
-
   }
 
   if (!suppliedElsewhere("studyAreaLarge", sim)) {
@@ -358,14 +349,6 @@ FireDisturbance <- function(sim) {
     sim$studyAreaLarge <- sim$studyArea
   }
 
-  # if (!identical(P(sim)$.crsUsed, crs(sim$studyArea))) {
-  #   sim$studyAreaLarge <- spTransform(sim$studyAreaLarge, P(sim)$.crsUsed) #faster without Cache
-  # }
-
-  # if (!identical(P(sim)$.crsUsed, crs(sim$studyArea))) {
-  #   sim$studyArea <- spTransform(sim$studyArea, P(sim)$.crsUsed) #faster without Cache
-  # }
-  #
   ## get LANDISII main input table where species and light requirements tables come from
   if (!suppliedElsewhere("sufficientLight", sim) |
       (!suppliedElsewhere("species", sim))) {
