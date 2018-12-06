@@ -327,21 +327,11 @@ FireDisturbance <- function(sim) {
 
 .inputObjects <- function(sim) {
   dPath <- dataPath(sim)
-  
+
   if (!suppliedElsewhere("studyArea", sim)) {
     message("'studyArea' was not provided by user. Using a polygon in Southwestern Alberta, Canada")
 
-    canadaMap <- Cache(getData, 'GADM', country = 'CAN', level = 1, path = asPath(dPath),
-                       cacheRepo = getPaths()$cachePath, quick = FALSE)
-    smallPolygonCoords = list(
-      coords = data.frame(x = c(-115.9022, -114.9815, -114.3677, -113.4470, -113.5084,
-                                -114.4291, -115.3498, -116.4547, -117.1298, -117.3140),
-                          y = c(50.45516, 50.45516, 50.51654, 50.51654, 51.62139,
-                                52.72624, 52.54210, 52.48072, 52.11243, 51.25310))
-    )
-
-    sim$studyArea <- SpatialPolygons(list(Polygons(list(Polygon(smallPolygonCoords$coords)), ID = "swAB_polygon")),
-                                              proj4string = crs(canadaMap))
+    sim$studyArea <- randomStudyArea(seed = 1234)
   }
 
   if (!suppliedElsewhere("studyAreaLarge", sim)) {
