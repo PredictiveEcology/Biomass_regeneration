@@ -3,7 +3,7 @@
 # please specify the package you need to run the sim function in the test files.
 
 # to test all the test files in the tests folder:
-test_dir("E:/GitHub/LandscapesInMotion/R/SpaDES/m/LandR_BiomassRegen/tests/testthat")
+test_dir("~/GitHub/LandscapesInMotion/R/SpaDES/m/Biomass_regeneration/tests/testthat")
 
 # Alternative, you can use test_file to test individual test file, e.g.:
-test_file("E:/GitHub/LandscapesInMotion/R/SpaDES/m/LandR_BiomassRegen/tests/testthat/test-template.R")
+test_file("~/GitHub/LandscapesInMotion/R/SpaDES/m/Biomass_regeneration/tests/testthat/test-template.R")

@@ -3,7 +3,7 @@
 # to all modules. Functions can be used without sim$ as they are namespaced, like functions
 # in R packages. If exact location is required, functions will be: sim$<moduleName>$FunctionName
 defineModule(sim, list(
-  name = "LandR_BiomassRegen",
+  name = "Biomass_regeneration",
   description = "Post-disturbance biomass regeneration module for LandR. Simulates post-fire mortality, regeneration and serotiny as part of the same event - all occurring sequentially immeadiately after fire. Mortality assumed to be 100%, serotiny and regeneration algorithms taken from LANDIS-II Biomass Succession extension, v3.6.1",
   keywords = c("biomass regeneration", "LandR", "disturbance", "mortality", "vegetation succession", "vegetation model"),
   authors = person("Ceres", "Barros", email = "cbarros@mail.ubc.ca", role = c("aut", "cre")),
@@ -13,7 +13,7 @@ defineModule(sim, list(
   timeframe = as.POSIXlt(c(NA, NA)),
   timeunit = "year",
   citation = list("citation.bib"),
-  documentation = list("README.txt", "LandR_BiomassRegen.Rmd"),
+  documentation = list("README.txt", "Biomass_regeneration.Rmd"),
   reqdPkgs = list("data.table", "raster", ## TODO: update package list!
                   "PredictiveEcology/pemisc@development"),
   parameters = rbind(
@@ -79,7 +79,7 @@ defineModule(sim, list(
 ## event types
 #   - type `init` is required for initialiazation
 
-doEvent.LandR_BiomassRegen <- function(sim, eventTime, eventType) {
+doEvent.Biomass_regeneration <- function(sim, eventTime, eventType) {
   switch(
     eventType,
     init = {
@@ -89,7 +89,7 @@ doEvent.LandR_BiomassRegen <- function(sim, eventTime, eventType) {
       ## schedule events
       if(!is.null(sim$rstCurrentBurn)){ # anything related to fire disturbance
         sim <- scheduleEvent(sim, P(sim)$fireInitialTime,
-                             "LandR_BiomassRegen", "fireDisturbance", eventPriority = 3)
+                             "Biomass_regeneration", "fireDisturbance", eventPriority = 3)
       }
     },
     fireDisturbance = {
@@ -97,7 +97,7 @@ doEvent.LandR_BiomassRegen <- function(sim, eventTime, eventType) {
 
       if(!is.null(sim$rstCurrentBurn)) {
         sim <- scheduleEvent(sim, time(sim) + P(sim)$fireTimestep,
-                             "LandR_BiomassRegen", "fireDisturbance",
+                             "Biomass_regeneration", "fireDisturbance",
                              eventPriority = 3)
       }
     },

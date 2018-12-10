@@ -1,5 +1,5 @@
 ---
-title: "LandR_BiomassRegen"
+title: "Biomass_regeneration"
 author: ""
 date: "16 August 2018"
 output: pdf_document
@@ -34,7 +34,7 @@ parameters <- list(
   #module1 = list(param1 = value1, param2 = value2),
   #module2 = list(param1 = value1, param2 = value2)
 )
-modules <- list("LandR_BiomassRegen")
+modules <- list("Biomass_regeneration")
 objects <- list()
 inputs <- list()
 outputs <- list()
@@ -62,7 +62,7 @@ Write what is saved.
 ## Input data
 
 How to obtain input data, and a description of the data required by the module.
-If `sourceURL` is specified, `downloadData("LandR_BiomassRegen", "path/to/modules/dir")` may be sufficient.
+If `sourceURL` is specified, `downloadData("Biomass_regeneration", "path/to/modules/dir")` may be sufficient.
 
 ## Output data
 
