@@ -326,7 +326,9 @@ FireDisturbance <- function(sim) {
 ## INPUT OBJECTS
 
 .inputObjects <- function(sim) {
-  dPath <- dataPath(sim)
+  cacheTags <- c(currentModule(sim), "function:.inputObjects")
+  dPath <- asPath(getOption("reproducible.destinationPath", dataPath(sim)), 1)
+  message(currentModule(sim), ": using dataPath '", dPath, "'.")
 
   if (!suppliedElsewhere("studyArea", sim)) {
     message("'studyArea' was not provided by user. Using a polygon in Southwestern Alberta, Canada")
