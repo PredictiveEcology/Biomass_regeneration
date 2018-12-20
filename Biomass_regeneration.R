@@ -123,6 +123,10 @@ FireDisturbance <- function(sim) {
   # 3. change of cohortdata and pixelgroup map
   # may be a supplemenatary function is needed to convert non-logical map
   # to a logical map
+  if (isTRUE(getOption("LandR.assertions"))) {
+    if (!identical(NROW(sim$cohortData), NROW(unique(sim$cohortData, by = c("pixelGroup", "speciesCode", "age")))))
+      stop("sim$cohortData has duplicated rows, i.e., multiple rows with the same pixelGroup, speciesCode and age")
+  }
 
   postFireNewCohortData <- data.table(pixelGroup = integer(), ecoregionGroup = numeric(),
                                   speciesCode = numeric(), pixelIndex = integer())
@@ -151,7 +155,7 @@ FireDisturbance <- function(sim) {
   burnPixelGroup <- unique(firePixelTable$pixelGroup)
 
   ## reclassify pixel groups as burnt (0L)
-  sim$pixelGroupMap[sim$burnLoci] <- 0L
+  sim$pixelGroupMap[sim$burnLoci] <- 0
 
   ## make table spp/ecoregionGroup/age in burnt pixels
   burnedcohortData <- sim$cohortData[pixelGroup %in% burnPixelGroup]
@@ -320,29 +324,55 @@ FireDisturbance <- function(sim) {
   ## add new cohorts to pixels where serotiny/regeneration were activated
   if (NROW(postFireNewCohortData) > 0) {
     maxPixelGroup <- as.integer(maxValue(sim$pixelGroupMap))
-    maxPixelGroupFromCohortData <- max(sim$cohortData$pixelGroup)
-    if (!identical(maxPixelGroup, maxPixelGroupFromCohortData))
-      stop("The sim$pixelGroupMap and cohortData have unmatching pixelGroup. They must be matching. ",
-           "If this occurs, please contact the module developers")
+
+    if (isTRUE(P(sim)$.unitTest)) {
+      maxPixelGroupFromCohortData <- max(sim$cohortData$pixelGroup)
+      if (!identical(maxPixelGroup, maxPixelGroupFromCohortData)) {
+
+        stop("The sim$pixelGroupMap and cohortData have unmatching pixelGroup. They must be matching. ",
+             "If this occurs, please contact the module developers")
+      }
+    }
 
     ## redo post-fire pixel groups by adding the maxPixelGroup to their ecoregioMap values
     if (!is.null(sim$serotinyResproutSuccessPixels)) {
 
+      # Assigns continguous pixelGroup number to each unique pixelGroup, starting from maxPixelGroup
       postFireNewCohortData <- addPixelGroup(postFireNewCohortData, maxPixelGroup = maxPixelGroup)
 
-      sim$pixelGroupMap[postFireNewCohortData$pixelIndex] <- postFireNewCohortData$pixelGroup
+      # Remove the duplicated pixels within pixelGroup (i.e., 2+ species in the same pixel)
+      postFireSeroResprUniquePixels <- unique(postFireNewCohortData, by = c("pixelIndex"))
+      postFireSeroResprUniquePixels[, speciesCode := NULL]
 
-      if (!isTRUE(all(postFireNewCohortData$pixelGroup == sim$pixelGroupMap[postFireNewCohortData$pixelIndex])))
+      sim$pixelGroupMap[postFireSeroResprUniquePixels$pixelIndex] <- postFireSeroResprUniquePixels$pixelGroup
+
+      if (!isTRUE(all(postFireSeroResprUniquePixels$pixelGroup == sim$pixelGroupMap[postFireSeroResprUniquePixels$pixelIndex])))
         stop("sim$pixelGroupMap and ")
 
     }
 
-    ## regenerate biomass in pixels that have serotiny/resprouting
+    ## give biomass in pixels that have serotiny/resprouting
     sim$cohortData[, sumB := sum(B, na.rm = TRUE), by = pixelGroup]
+
+    ##########################################################
+    # Add new cohorts and rm missing cohorts (i.e., those pixelGroups that are gone)
+    ##########################################################
     sim$cohortData <- addNewCohorts(postFireNewCohortData, sim$cohortData, sim$pixelGroupMap,
                                   time = round(time(sim)), speciesEcoregion = sim$speciesEcoregion)
-  }
+    sim$cohortData <- rmMissingCohorts(sim$cohortData, sim$pixelGroupMap, firePixelTable)
 
+  }
+  #setkey(sim$cohortData, pixelGroup)
+  #print(sim$cohortData)
+  #print(sim$pixelGroupMap)
+
+  if (isTRUE(getOption("LandR.assertions"))) {
+    if (!identical(0, sort(setdiff(getValues(sim$pixelGroupMap), sim$cohortData$pixelGroup)))) {
+      browser()
+      stop("pixelGroupMap and cohortData have diverged following FireDisturbance")
+    }
+
+  }
   sim$lastFireYear <- time(sim)
   sim$firePixelTable <- firePixelTable
   return(invisible(sim))
