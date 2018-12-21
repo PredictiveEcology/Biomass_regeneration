@@ -15,7 +15,7 @@ defineModule(sim, list(
   citation = list("citation.bib"),
   documentation = list("README.txt", "Biomass_regeneration.Rmd"),
   reqdPkgs = list("crayon", "data.table", "raster", ## TODO: update package list!
-                  #"PredictiveEcology/LandR@development",
+                  "PredictiveEcology/LandR@development",
                   "PredictiveEcology/pemisc@development"),
   parameters = rbind(
     defineParameter("calibrate", "logical", FALSE, desc = "Do calibration? Defaults to FALSE"),
