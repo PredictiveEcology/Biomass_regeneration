@@ -14,7 +14,8 @@ defineModule(sim, list(
   timeunit = "year",
   citation = list("citation.bib"),
   documentation = list("README.txt", "Biomass_regeneration.Rmd"),
-  reqdPkgs = list("data.table", "raster", "crayon", ## TODO: update package list!
+  reqdPkgs = list("crayon", "data.table", "raster", ## TODO: update package list!
+                  #"PredictiveEcology/LandR@development",
                   "PredictiveEcology/pemisc@development"),
   parameters = rbind(
     defineParameter("calibrate", "logical", FALSE, desc = "Do calibration? Defaults to FALSE"),
@@ -400,7 +401,7 @@ FireDisturbance <- function(sim) {
   ## get LANDISII main input table where species and light requirements tables come from
   if (!suppliedElsewhere("sufficientLight", sim) |
       (!suppliedElsewhere("species", sim))) {
-    mainInput <- prepInputsMainInput(url = NULL, dPath, cacheTags) ## uses default URL in pemisc
+    mainInput <- prepInputsMainInput(url = NULL, dPath, cacheTags) ## uses default URL
   }
 
   ## read species txt and convert it to data table
