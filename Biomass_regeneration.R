@@ -58,7 +58,6 @@ defineModule(sim, list(
                  sourceURL = "https://raw.githubusercontent.com/LANDIS-II-Foundation/Extensions-Succession/master/biomass-succession-archive/trunk/tests/v6.0-2.0/biomass-succession_test.txt")
   ),
   outputObjects = bind_rows(
-    createsOutput("burnLoci", "numeric", desc = "Pixel IDs that were burned. The output from this module is a slight subset of the input because it removes inactivePixelIndex"),
     createsOutput("cohortData", "data.table",
                   desc = paste("age cohort-biomass table hooked to pixel group map",
                                "by pixelGroupIndex at succession time step")),
@@ -145,18 +144,14 @@ FireDisturbance <- function(sim) {
   # }
 
   ## extract burn pixel indices/groups and remove potentially innactive pixels
-  burnedLoci <- getValues(sim$rstCurrentBurn)
-  sim$burnLoci <- which(burnedLoci > 0)
+  burnLoci <- which(getValues(sim$rstCurrentBurn) > 0)
   if (length(sim$inactivePixelIndex) > 0) {
     # These can burn other vegetation (grassland, wetland)
-    sim$burnLoci <- sim$burnLoci[!(sim$burnLoci %in% sim$inactivePixelIndex)] # this is to prevent avaluating the pixels that are inactive
+    burnLoci <- burnLoci[!(burnLoci %in% sim$inactivePixelIndex)] # this is to prevent avaluating the pixels that are inactive
   }
-  firePixelTable <- data.table(cbind(pixelIndex = as.integer(sim$burnLoci),
-                                     pixelGroup = as.integer(getValues(sim$pixelGroupMap)[sim$burnLoci])))
+  firePixelTable <- data.table(cbind(pixelIndex = as.integer(burnLoci),
+                                     pixelGroup = as.integer(getValues(sim$pixelGroupMap)[burnLoci])))
   burnPixelGroup <- unique(firePixelTable$pixelGroup)
-
-  ## reclassify pixel groups as burnt (0L)
-  sim$pixelGroupMap[sim$burnLoci] <- 0
 
   ## make table spp/ecoregionGroup/age in burnt pixels
   burnedcohortData <- sim$cohortData[pixelGroup %in% burnPixelGroup]
@@ -324,53 +319,30 @@ FireDisturbance <- function(sim) {
 
   ## add new cohorts to pixels where serotiny/regeneration were activated
   if (NROW(postFireNewCohortData) > 0) {
-    maxPixelGroup <- as.integer(maxValue(sim$pixelGroupMap))
-
-    if (isTRUE(P(sim)$.unitTest)) {
-      maxPixelGroupFromCohortData <- max(sim$cohortData$pixelGroup)
-      if (!identical(maxPixelGroup, maxPixelGroupFromCohortData)) {
-
-        stop("The sim$pixelGroupMap and cohortData have unmatching pixelGroup. They must be matching. ",
-             "If this occurs, please contact the module developers")
-      }
-    }
-
     ## redo post-fire pixel groups by adding the maxPixelGroup to their ecoregioMap values
     if (!is.null(sim$serotinyResproutSuccessPixels)) {
 
-      # Assigns continguous pixelGroup number to each unique pixelGroup, starting from maxPixelGroup
-      postFireNewCohortData <- addPixelGroup(postFireNewCohortData, maxPixelGroup = maxPixelGroup)
-
-      # Remove the duplicated pixels within pixelGroup (i.e., 2+ species in the same pixel)
-      postFireSeroResprUniquePixels <- unique(postFireNewCohortData, by = c("pixelIndex"))
-      postFireSeroResprUniquePixels[, speciesCode := NULL]
-
-      sim$pixelGroupMap[postFireSeroResprUniquePixels$pixelIndex] <- postFireSeroResprUniquePixels$pixelGroup
-
-      if (!isTRUE(all(postFireSeroResprUniquePixels$pixelGroup == sim$pixelGroupMap[postFireSeroResprUniquePixels$pixelIndex])))
-        stop("sim$pixelGroupMap and ")
-
-      ## give biomass in pixels that have serotiny/resprouting
-      sim$cohortData[, sumB := sum(B, na.rm = TRUE), by = pixelGroup]
-
+      # Add new cohorts to BOTH the sim$cohortData and sim$pixelGroupMap
+      ## reclassify pixel groups as burnt (0L)
+      sim$pixelGroupMap[firePixelTable$pixelIndex] <- 0
+      outs <- addCohorts(newCohortData = postFireNewCohortData,
+                         cohortData = sim$cohortData,
+                         pixelGroupMap = sim$pixelGroupMap,
+                         time = round(time(sim)),
+                         speciesEcoregion = sim$speciesEcoregion)
+      sim$cohortData <- outs$cohortData
+      sim$pixelGroupMap <- outs$pixelGroupMap
       ##########################################################
-      # Add new cohorts and rm missing cohorts (i.e., those pixelGroups that are gone)
+      # rm missing cohorts (i.e., those pixelGroups that are gone due to the fire/firePixelTable)
       ##########################################################
-      sim$cohortData <- addNewCohorts(postFireNewCohortData, sim$cohortData, sim$pixelGroupMap,
-                                      time = round(time(sim)), speciesEcoregion = sim$speciesEcoregion)
       sim$cohortData <- rmMissingCohorts(sim$cohortData, sim$pixelGroupMap, firePixelTable)
     }
-
-
   }
-  #setkey(sim$cohortData, pixelGroup)
-  #print(sim$cohortData)
-  #print(sim$pixelGroupMap)
 
   if (isTRUE(getOption("LandR.assertions"))) {
     if (!identical(0, sort(setdiff(getValues(sim$pixelGroupMap), sim$cohortData$pixelGroup)))) {
       browser()
-      stop("pixelGroupMap and cohortData have diverged following FireDisturbance")
+      stop("pixelGroupMap and cohortData have diverged values for pixelGroupMap following FireDisturbance")
     }
 
   }
