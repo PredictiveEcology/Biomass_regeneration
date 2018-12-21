@@ -349,17 +349,17 @@ FireDisturbance <- function(sim) {
       if (!isTRUE(all(postFireSeroResprUniquePixels$pixelGroup == sim$pixelGroupMap[postFireSeroResprUniquePixels$pixelIndex])))
         stop("sim$pixelGroupMap and ")
 
+      ## give biomass in pixels that have serotiny/resprouting
+      sim$cohortData[, sumB := sum(B, na.rm = TRUE), by = pixelGroup]
+
+      ##########################################################
+      # Add new cohorts and rm missing cohorts (i.e., those pixelGroups that are gone)
+      ##########################################################
+      sim$cohortData <- addNewCohorts(postFireNewCohortData, sim$cohortData, sim$pixelGroupMap,
+                                      time = round(time(sim)), speciesEcoregion = sim$speciesEcoregion)
+      sim$cohortData <- rmMissingCohorts(sim$cohortData, sim$pixelGroupMap, firePixelTable)
     }
 
-    ## give biomass in pixels that have serotiny/resprouting
-    sim$cohortData[, sumB := sum(B, na.rm = TRUE), by = pixelGroup]
-
-    ##########################################################
-    # Add new cohorts and rm missing cohorts (i.e., those pixelGroups that are gone)
-    ##########################################################
-    sim$cohortData <- addNewCohorts(postFireNewCohortData, sim$cohortData, sim$pixelGroupMap,
-                                  time = round(time(sim)), speciesEcoregion = sim$speciesEcoregion)
-    sim$cohortData <- rmMissingCohorts(sim$cohortData, sim$pixelGroupMap, firePixelTable)
 
   }
   #setkey(sim$cohortData, pixelGroup)
