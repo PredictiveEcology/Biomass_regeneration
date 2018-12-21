@@ -452,18 +452,3 @@ FireDisturbance <- function(sim) {
   return(invisible(sim))
 }
 
-makePixelGroups <- function(maxPixelGroup, ecoregionGroup, speciesGroup) {
-  as.integer(maxPixelGroup) +
-  as.integer(factor(paste(ecoregionGroup, speciesGroup, sep = "_")))
-}
-
-addPixelGroup <- function(pixelCohortData, maxPixelGroup) {
-  # pixel groups are groups of identical pixels based on speciesGroup x Age and ecoregionGroup -- since age is 0 here, it is not necessary
-  pixelCohortData[, speciesInt := as.integer(speciesCode)]
-  pixelCohortData[, speciesGroup := sum(2^(unique(speciesInt)-1)),  by = "pixelIndex"]
-  pixelCohortData[, speciesGroup := paddedFloatToChar(speciesGroup, padL = max(nchar(as.character(speciesGroup))))]
-  setkey(pixelCohortData, ecoregionGroup, speciesGroup)
-  pixelCohortData[ , pixelGroup := makePixelGroups(maxPixelGroup, ecoregionGroup, speciesGroup)]
-  pixelCohortData[, c("speciesInt", "speciesGroup") := NULL]
-  pixelCohortData
-}
