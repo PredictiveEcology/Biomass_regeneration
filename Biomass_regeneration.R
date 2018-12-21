@@ -336,16 +336,12 @@ FireDisturbance <- function(sim) {
       # rm missing cohorts (i.e., those pixelGroups that are gone due to the fire/firePixelTable)
       ##########################################################
       sim$cohortData <- rmMissingCohorts(sim$cohortData, sim$pixelGroupMap, firePixelTable)
+      if (isTRUE(getOption("LandR.assertions"))) {
+        testCohortData(sim$cohortData, sim$pixelGroupMap, sim = sim)
+      }
     }
   }
 
-  if (isTRUE(getOption("LandR.assertions"))) {
-    if (!identical(0, sort(setdiff(getValues(sim$pixelGroupMap), sim$cohortData$pixelGroup)))) {
-      browser()
-      stop("pixelGroupMap and cohortData have diverged values for pixelGroupMap following FireDisturbance")
-    }
-
-  }
   sim$lastFireYear <- time(sim)
   sim$firePixelTable <- firePixelTable
   return(invisible(sim))
