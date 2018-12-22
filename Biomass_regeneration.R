@@ -22,7 +22,9 @@ defineModule(sim, list(
     defineParameter("fireInitialTime", "numeric", 2L,
                     desc = "The event time that the first fire disturbance event occurs"),
     defineParameter("fireTimestep", "numeric", 2L,
-                    desc = "The number of time units between successive fire events in a fire module")
+                    desc = "The number of time units between successive fire events in a fire module"),
+    defineParameter("successionTimestep", "numeric", 10L,
+                    desc = "The number of time units between successive seed dispersal events, the 'LANDIS succession time step'")
   ),
   inputObjects = bind_rows(
     expectsInput("cohortData", "data.table",
@@ -124,8 +126,11 @@ FireDisturbance <- function(sim) {
   # may be a supplemenatary function is needed to convert non-logical map
   # to a logical map
   if (isTRUE(getOption("LandR.assertions"))) {
-    if (!identical(NROW(sim$cohortData), NROW(unique(sim$cohortData, by = c("pixelGroup", "speciesCode", "age")))))
+    if (!identical(NROW(sim$cohortData), NROW(unique(sim$cohortData, by = c("pixelGroup", "speciesCode", "age", "B"))))) {
+      browser()
       stop("sim$cohortData has duplicated rows, i.e., multiple rows with the same pixelGroup, speciesCode and age")
+    }
+
   }
 
   postFireNewCohortData <- data.table(pixelGroup = integer(), ecoregionGroup = numeric(),
@@ -324,19 +329,21 @@ FireDisturbance <- function(sim) {
 
       # Add new cohorts to BOTH the sim$cohortData and sim$pixelGroupMap
       ## reclassify pixel groups as burnt (0L)
-      sim$pixelGroupMap[firePixelTable$pixelIndex] <- 0
-      outs <- addCohorts(newCohortData = postFireNewCohortData,
+      outs <- updateCohortData(newCohortData = postFireNewCohortData,
                          cohortData = sim$cohortData,
                          pixelGroupMap = sim$pixelGroupMap,
                          time = round(time(sim)),
-                         speciesEcoregion = sim$speciesEcoregion)
+                         speciesEcoregion = sim$speciesEcoregion,
+                         firePixelTable = firePixelTable,
+                         successionTimestep = P(sim)$successionTimestep)
       sim$cohortData <- outs$cohortData
       sim$pixelGroupMap <- outs$pixelGroupMap
       ##########################################################
       # rm missing cohorts (i.e., those pixelGroups that are gone due to the fire/firePixelTable)
       ##########################################################
-      sim$cohortData <- rmMissingCohorts(sim$cohortData, sim$pixelGroupMap, firePixelTable)
+      #sim$cohortData <- rmMissingCohorts(sim$cohortData, sim$pixelGroupMap, firePixelTable)
       if (isTRUE(getOption("LandR.assertions"))) {
+        message(crayon::red("Testing with testCohortData"))
         testCohortData(sim$cohortData, sim$pixelGroupMap, sim = sim)
       }
     }
