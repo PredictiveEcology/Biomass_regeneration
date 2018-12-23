@@ -127,7 +127,6 @@ FireDisturbance <- function(sim) {
   # to a logical map
   if (isTRUE(getOption("LandR.assertions"))) {
     if (!identical(NROW(sim$cohortData), NROW(unique(sim$cohortData, by = c("pixelGroup", "speciesCode", "age", "B"))))) {
-      browser()
       stop("sim$cohortData has duplicated rows, i.e., multiple rows with the same pixelGroup, speciesCode and age")
     }
 
