@@ -347,6 +347,7 @@ FireDisturbance <- function(sim) {
       }
     }
   }
+  if (NROW(unique(sim$cohortData[pixelGroup == 43467]$ecoregionGroup))>1) stop()
 
   sim$lastFireYear <- time(sim)
   sim$firePixelTable <- firePixelTable
