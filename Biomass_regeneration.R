@@ -246,6 +246,7 @@ FireDisturbance <- function(sim) {
   ## make a table of pixels where resprouting occurs.
   if (is.null(serotinyPixel)) {
     resproutingPixelTable <- setkey(firePixelTable, pixelGroup)
+    availableToResprout <- burnedcohortData[0,]
   } else {
     # Replacing here -- ELiot -- THis was removing entire pixels that had successful serotiny -- now only species-pixel combos are removed
     ## should be done by pixel and species -- Eliot: it works ok now because there are no serotinous species that are resprouters
