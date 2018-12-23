@@ -342,7 +342,6 @@ FireDisturbance <- function(sim) {
       ##########################################################
       #sim$cohortData <- rmMissingCohorts(sim$cohortData, sim$pixelGroupMap, firePixelTable)
       if (isTRUE(getOption("LandR.assertions"))) {
-        message(crayon::red("Testing with testCohortData"))
         testCohortData(sim$cohortData, sim$pixelGroupMap, sim = sim)
       }
     }
