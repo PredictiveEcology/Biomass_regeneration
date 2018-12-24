@@ -187,11 +187,13 @@ FireDisturbance <- function(sim) {
     ## from now on the regeneration process is assessed for each potential pixel
     #setkey(serotinyPixelTable, pixelGroup)
     #setkey(serotinyCohortData, pixelGroup)
-    serotinyCohortData <- serotinyPixelTable[serotinyCohortData, nomatch = 0, on = "pixelGroup"] ## join table to add pixels
+    serotinyCohortData <- serotinyPixelTable[serotinyCohortData, allow.cartesian = TRUE,
+                                             nomatch = 0, on = "pixelGroup"] ## join table to add pixels
 
     ## light check: add shade tolerance to table and set shade to 0 (100% mortality.)
     ## the get survival probs and subset survivors with runif
-    serotinyCohortData <- serotinyCohortData[sim$species[, .(speciesCode, shadetolerance)], nomatch = 0, on = "speciesCode"]
+    serotinyCohortData <- serotinyCohortData[sim$species[, .(speciesCode, shadetolerance)],
+                                             nomatch = 0, on = "speciesCode"]
     serotinyCohortData[, siteShade := 0]
     # serotinyCohortData <- setkey(serotinyCohortData, speciesCode)[sim$species[,.(speciesCode, shadetolerance)],
     #                                                     nomatch = 0][, siteShade := 0]
