@@ -50,11 +50,6 @@ defineModule(sim, list(
                               "with attribute LTHFC describing the fire return interval.",
                               "Defaults to a square shapefile in Southwestern Alberta, Canada."),
                  sourceURL = ""),
-    expectsInput("studyAreaLarge", "SpatialPolygonsDataFrame",
-                 desc = paste("multipolygon (larger area than studyArea) to use for parameter estimation,",
-                              "with attribute LTHFC describing the fire return interval.",
-                              "Defaults to a square shapefile in Southwestern Alberta, Canada."),
-                 sourceURL = ""),
     expectsInput("sufficientLight", "data.frame",
                  desc = "table defining how the species with different shade tolerance respond to stand shadeness",
                  sourceURL = "https://raw.githubusercontent.com/LANDIS-II-Foundation/Extensions-Succession/master/biomass-succession-archive/trunk/tests/v6.0-2.0/biomass-succession_test.txt")
@@ -370,11 +365,6 @@ FireDisturbance <- function(sim) {
     message("'studyArea' was not provided by user. Using a polygon in Southwestern Alberta, Canada")
 
     sim$studyArea <- randomStudyArea(seed = 1234)
-  }
-
-  if (!suppliedElsewhere("studyAreaLarge", sim)) {
-    message("'studyAreaLarge' was not provided by user. Using the same as 'studyArea'")
-    sim$studyAreaLarge <- sim$studyArea
   }
 
   ## get LANDISII main input table where species and light requirements tables come from
