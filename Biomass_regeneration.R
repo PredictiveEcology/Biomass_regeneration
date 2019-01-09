@@ -341,9 +341,7 @@ FireDisturbance <- function(sim) {
       # rm missing cohorts (i.e., those pixelGroups that are gone due to the fire/firePixelTable)
       ##########################################################
       #sim$cohortData <- rmMissingCohorts(sim$cohortData, sim$pixelGroupMap, firePixelTable)
-      if (isTRUE(getOption("LandR.assertions"))) {
-        testCohortData(sim$cohortData, sim$pixelGroupMap, sim = sim)
-      }
+      testCohortData(sim$cohortData, sim$pixelGroupMap, sim = sim)
     }
   }
   if (NROW(unique(sim$cohortData[pixelGroup == 43467]$ecoregionGroup))>1) stop()
