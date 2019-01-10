@@ -142,7 +142,7 @@ FireDisturbance <- function(sim) {
   #   }
   # }
 
-  ## extract burn pixel indices/groups and remove potentially innactive pixels
+  ## extract burn pixel indices/groups and remove potentially inactive pixels
   burnLoci <- which(getValues(sim$rstCurrentBurn) > 0)
   if (length(sim$inactivePixelIndex) > 0) {
     # These can burn other vegetation (grassland, wetland)
@@ -340,8 +340,6 @@ FireDisturbance <- function(sim) {
       ##########################################################
       # rm missing cohorts (i.e., those pixelGroups that are gone due to the fire/firePixelTable)
       ##########################################################
-      #sim$cohortData <- rmMissingCohorts(sim$cohortData, sim$pixelGroupMap, firePixelTable)
-      testCohortData(sim$cohortData, sim$pixelGroupMap, sim = sim)
     }
   }
   if (NROW(unique(sim$cohortData[pixelGroup == 43467]$ecoregionGroup))>1) stop()
