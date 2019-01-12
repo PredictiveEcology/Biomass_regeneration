@@ -126,8 +126,11 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
     if (!identical(NROW(sim$cohortData), NROW(unique(sim$cohortData, by = c("pixelGroup", "speciesCode", "age", "B"))))) {
       stop("sim$cohortData has duplicated rows, i.e., multiple rows with the same pixelGroup, speciesCode and age")
     }
-
   }
+  # if (time(sim) >= 11) {
+  #   browser()
+  #   aaaa <<- 1
+  # }
 
   postFirePixelCohortData <- sim$cohortData[0,]
   postFirePixelCohortData[, `:=`(pixelIndex = integer(),
@@ -160,7 +163,7 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
     data.table(pixelIndex = as.integer(treedBurnLoci),
                pixelGroup = as.integer(getValues(sim$pixelGroupMap)[treedBurnLoci]),
                burnTime = time(sim))
-
+  sim$treedFirePixelTableSinceLastDisp[, pixelGroup := as.integer(getValues(sim$pixelGroupMap))[pixelIndex]]
   # append previous year's
   treedFirePixelTableSinceLastDisp <- rbindlist(list(sim$treedFirePixelTableSinceLastDisp,
                                                      treedFirePixelTableSinceLastDisp))
@@ -340,6 +343,7 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
       ## reclassify pixel groups as burnt (0L)
       if (verbose > 0)
         message(blue("Post serotiny and resprouting"))
+
       outs <- updateCohortData(newPixelCohortData = postFirePixelCohortData,
                          cohortData = sim$cohortData,
                          pixelGroupMap = sim$pixelGroupMap,
