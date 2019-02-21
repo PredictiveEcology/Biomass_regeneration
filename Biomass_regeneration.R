@@ -84,24 +84,20 @@ doEvent.Biomass_regeneration <- function(sim, eventTime, eventType) {
       sim <- Init(sim)
 
       ## schedule events
-      if(!is.null(sim$rstCurrentBurn)){ # anything related to fire disturbance
-        sim <- scheduleEvent(sim, P(sim)$fireInitialTime,
-                             "Biomass_regeneration", "fireDisturbance",
-                             eventPriority = 3)
-      } else {
-        message(crayon::green("The Biomass_regeneration module should be loaded after a fire module ",
-                "because it assumes that sim$rstCurrentBurn exists. Currently, it does ",
-                "not. If this is not correct, please load this module after a fire module."))
-      }
+      sim <- scheduleEvent(sim, P(sim)$fireInitialTime,
+                           "Biomass_regeneration", "fireDisturbance",
+                           eventPriority = 3)
     },
     fireDisturbance = {
-      sim <- FireDisturbance(sim)
-
       if(!is.null(sim$rstCurrentBurn)) {
-        sim <- scheduleEvent(sim, time(sim) + P(sim)$fireTimestep,
-                             "Biomass_regeneration", "fireDisturbance",
-                             eventPriority = 3)
+        sim <- FireDisturbance(sim)
+      } else {
+        message(crayon::green("The Biomass_regeneration module is expecting sim$rstCurrentBurn; ",
+                              " Currently, it does not exist."))
       }
+      sim <- scheduleEvent(sim, time(sim) + P(sim)$fireTimestep,
+                           "Biomass_regeneration", "fireDisturbance",
+                           eventPriority = 3)
     },
     warning(paste("Undefined event type: '", current(sim)[1, "eventType", with = FALSE],
                   "' in module '", current(sim)[1, "moduleName", with = FALSE], "'", sep = ""))
