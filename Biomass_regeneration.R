@@ -250,7 +250,6 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
   #############################################################
   # from now on, starting assessing resprouting reproduction:
   # basically same thing as serotiny
-  # remove the pixels that had successful serotiny regeneration (antijoin)
 
   ## make a table of pixels where resprouting occurs.
   if (is.null(serotinyPixel)) {
