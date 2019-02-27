@@ -449,4 +449,3 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
 
   return(invisible(sim))
 }
-
