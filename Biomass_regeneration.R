@@ -19,9 +19,9 @@ defineModule(sim, list(
                   "PredictiveEcology/pemisc@development"),
   parameters = rbind(
     defineParameter("calibrate", "logical", FALSE, desc = "Do calibration? Defaults to FALSE"),
-    defineParameter("fireInitialTime", "numeric", 2L,
+    defineParameter("fireInitialTime", "numeric", 1L,
                     desc = "The event time that the first fire disturbance event occurs"),
-    defineParameter("fireTimestep", "numeric", 2L,
+    defineParameter("fireTimestep", "numeric", 1L,
                     desc = "The number of time units between successive fire events in a fire module"),
     defineParameter("successionTimestep", "numeric", 10L,
                     desc = "The number of time units between successive seed dispersal events, the 'LANDIS succession time step'")
@@ -370,6 +370,20 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
   dPath <- asPath(getOption("reproducible.destinationPath", dataPath(sim)), 1)
   message(currentModule(sim), ": using dataPath '", dPath, "'.")
 
+  if (suppliedElsewhere(object = "scfmReturnInterval", sim = sim, where = "sim")) {
+    if (P(sim)$fireTimestep != sim$scfmReturnInterval){
+      sim@params$Biomass_regeneration$fireTimestep <- sim$scfmReturnInterval
+      message(paste0("Biomass_regeneration detected 'scfm' fire model. Setting fireTimestep to ", 
+                     sim$scfmReturnInterval, 
+                     " to match it."))
+      }
+    } else {
+      if(is.null(P(sim)$fireTimestep)){
+        P(sim)$fireTimestep <- 1L
+        message("fireTimestep is 'NULL'. Setting to 1 unit of time")
+      }
+    }
+  
   if (!suppliedElsewhere("studyArea", sim)) {
     message("'studyArea' was not provided by user. Using a polygon in Southwestern Alberta, Canada")
 
