@@ -7,10 +7,10 @@ output: pdf_document
 
 # Overview
 
-Provide an overview of what the module does / how to use the module.
+Biomass_regeneration is a SpaDES module that simulates post-disturbance regeneration mechanisms for LBMR. As such, this module is mostly based of the post-disturbance regeneration mechanisms present in LANDIS-II Biomass Succession v3.2.1 extension (see see [LANDIS-II Biomass Succession v3.2 User Guide](https://github.com/LANDIS-II-Foundation/Extension-Biomass-Succession/blob/master/docs/LANDIS-II%20Biomass%20Succession%20v3.2%20User%20Guide.docx) and [Scheller and Mladenoff (2004)](https://pdfs.semanticscholar.org/4d38/d0be6b292eccd444af399775d37a757d1967.pdf). At the moment, the Biomass_regeneration module only simulates post-fire disturbance effects on forest species, by simualting post-fire mortality and activating resprouting and seeding mechanisms for each species, depending on their traits (i.e. ability to resprout and/or germinate from seeds following fire). Post-fire mortality behaves in a stand-replacing fashion, i.e. should a pixel be within a fire perimeter (determined by a fire raster) all cohorts see their biomasses set to 0.
+As for post-fire regeneration, the module first evaluates whether any species present prior to fire were capable of post-fire seeding germination. If so, these species will germinate depending on light conditions and their shade tolerance, and depending on their establishment probability (i.e. germination success) in that pixel. The module then evaluates if any species present before fire are capable of resprouting 
 
-Module documentation should be written so that others can use your module.
-This is a template for module documentation, and should be changed to reflect your module.
+
 
 ## R Markdown
 
