@@ -130,8 +130,8 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
 
   postFirePixelCohortData <- sim$cohortData[0,]
   postFirePixelCohortData[, `:=`(pixelIndex = integer(),
-                               age = NULL, B = NULL, mortality = NULL,
-                               aNPPAct = NULL, sumB = NULL)]
+                                 age = NULL, B = NULL, mortality = NULL,
+                                 aNPPAct = NULL, sumB = NULL)]
   # postFirePixelCohortData <- data.table(pixelGroup = integer(), ecoregionGroup = numeric(),
   #                                 speciesCode = numeric(), pixelIndex = integer())
   if(P(sim)$calibrate){
@@ -181,7 +181,7 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
     ## assess potential serotiny reg: add sexual maturity to the table and compare w/ age
     ## as long as one cohort is sexually mature, serotiny is activated
     serotinyPixelCohortData <- serotinyPixelCohortData[sim$species[, .(speciesCode, sexualmature)],
-                                                         on = "speciesCode", nomatch = 0]
+                                                       on = "speciesCode", nomatch = 0]
     #serotinyPixelCohortData <- setkey(serotinyPixelCohortData, speciesCode)[sim$species[,.(speciesCode, sexualmature)],
     #                                                                          nomatch = 0]
     serotinyPixelCohortData <- serotinyPixelCohortData[age >= sexualmature] %>% # NOTE should be in mortalityFromDisturbance module or event
@@ -195,17 +195,17 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
     #setkey(serotinyPixelTable, pixelGroup)
     #setkey(serotinyPixelCohortData, pixelGroup)
     serotinyPixelCohortData <- serotinyPixelTable[serotinyPixelCohortData, allow.cartesian = TRUE,
-                                             nomatch = 0, on = "pixelGroup"] ## join table to add pixels
+                                                  nomatch = 0, on = "pixelGroup"] ## join table to add pixels
 
     ## light check: add shade tolerance to table and set shade to 0 (100% mortality.)
     ## the get survival probs and subset survivors with runif
     serotinyPixelCohortData <- serotinyPixelCohortData[sim$species[, .(speciesCode, shadetolerance)],
-                                             nomatch = 0, on = "speciesCode"]
+                                                       nomatch = 0, on = "speciesCode"]
     serotinyPixelCohortData[, siteShade := 0]
     # serotinyPixelCohortData <- setkey(serotinyPixelCohortData, speciesCode)[sim$species[,.(speciesCode, shadetolerance)],
     #                                                     nomatch = 0][, siteShade := 0]
     serotinyPixelCohortData <- assignLightProb(sufficientLight = sim$sufficientLight,
-                                     serotinyPixelCohortData)
+                                               serotinyPixelCohortData)
     serotinyPixelCohortData <- serotinyPixelCohortData[lightProb %>>% runif(nrow(serotinyPixelCohortData), 0, 1)]  ## subset survivors
     set(serotinyPixelCohortData, NULL, c("shadetolerance", "siteShade", "lightProb"), NULL)   ## clean table again
 
@@ -250,7 +250,6 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
   #############################################################
   # from now on, starting assessing resprouting reproduction:
   # basically same thing as serotiny
-  # remove the pixels that had successful serotiny regeneration (antijoin)
 
   ## make a table of pixels where resprouting occurs.
   if (is.null(serotinyPixel)) {
@@ -260,7 +259,7 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
     # Replacing here -- ELiot -- THis was removing entire pixels that had successful serotiny -- now only species-pixel combos are removed
     ## should be done by pixel and species -- Eliot: it works ok now because there are no serotinous species that are resprouters
     full <- treedFirePixelTableSinceLastDisp[unique(burnedcohortData, by = c("pixelGroup", "speciesCode")),
-                           on = "pixelGroup", allow.cartesian = TRUE] #
+                                             on = "pixelGroup", allow.cartesian = TRUE] #
 
     # anti join to remove species-pixels that had successful serotiny
     availableToResprout <- full[!postFirePixelCohortData, on = c("pixelIndex", "speciesCode")]
@@ -290,12 +289,12 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
     ## light check: add shade tolerance to table and set shade to 0 (100% mortality.)
     ## the get survival probs and subset survivors with runif
     resproutingPixelCohortData <- resproutingPixelCohortData[sim$species[, .(speciesCode, shadetolerance)],
-                                                   nomatch = 0, on = "speciesCode"]
+                                                             nomatch = 0, on = "speciesCode"]
     resproutingPixelCohortData[,siteShade := 0]
     # resproutingPixelCohortData <- setkey(resproutingPixelCohortData, speciesCode)[sim$species[,.(speciesCode, shadetolerance)],
     #                                                     nomatch = 0][, siteShade := 0]
     resproutingPixelCohortData <- assignLightProb(sufficientLight = sim$sufficientLight,
-                                     resproutingPixelCohortData)
+                                                  resproutingPixelCohortData)
 
     resproutingPixelCohortData <- resproutingPixelCohortData[lightProb %>>% runif(nrow(resproutingPixelCohortData), 0, 1)]
     resproutingPixelCohortData <- resproutingPixelCohortData[resproutprob %>>% runif(nrow(resproutingPixelCohortData), 0, 1)]
@@ -341,12 +340,12 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
         message(blue("Post serotiny and resprouting"))
 
       outs <- updateCohortData(newPixelCohortData = postFirePixelCohortData,
-                         cohortData = sim$cohortData,
-                         pixelGroupMap = sim$pixelGroupMap,
-                         time = round(time(sim)),
-                         speciesEcoregion = sim$speciesEcoregion,
-                         treedFirePixelTableSinceLastDisp = treedFirePixelTableSinceLastDisp,
-                         successionTimestep = P(sim)$successionTimestep)
+                               cohortData = sim$cohortData,
+                               pixelGroupMap = sim$pixelGroupMap,
+                               time = round(time(sim)),
+                               speciesEcoregion = sim$speciesEcoregion,
+                               treedFirePixelTableSinceLastDisp = treedFirePixelTableSinceLastDisp,
+                               successionTimestep = P(sim)$successionTimestep)
 
       sim$cohortData <- outs$cohortData
       sim$pixelGroupMap <- outs$pixelGroupMap
