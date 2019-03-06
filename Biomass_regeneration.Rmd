@@ -24,7 +24,7 @@ This is no longer the case in Biomass_regeneration, where both serotinity and re
 ```{r module_usage}
 library(SpaDES)
 
-setPaths(modulePath = file.path("E:/GitHub/LandscapesInMotion/R/SpaDES/m"))
+setPaths()
 getPaths() # shows where the 4 relevant paths are
 
 times <- list(start = 0, end = 10)
