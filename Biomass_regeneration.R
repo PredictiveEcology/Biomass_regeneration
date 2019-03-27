@@ -23,8 +23,7 @@ defineModule(sim, list(
                     desc = "The event time that the first fire disturbance event occurs"),
     defineParameter("fireTimestep", "numeric", 2L,
                     desc = "The number of time units between successive fire events in a fire module"),
-    defineParameter("successionTimestep", "numeric", 10L,
-                    desc = "The number of time units between successive seed dispersal events, the 'LANDIS succession time step'")
+    defineParameter("successionTimestep", "numeric", 10L, NA, NA, "defines the simulation time step, default is 10 years")
   ),
   inputObjects = bind_rows(
     expectsInput("cohortData", "data.table",
