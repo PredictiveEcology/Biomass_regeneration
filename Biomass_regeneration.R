@@ -19,12 +19,11 @@ defineModule(sim, list(
                   "PredictiveEcology/pemisc@development"),
   parameters = rbind(
     defineParameter("calibrate", "logical", FALSE, desc = "Do calibration? Defaults to FALSE"),
-    defineParameter("fireInitialTime", "numeric", 1L,
+    defineParameter("fireInitialTime", "numeric", NA,
                     desc = "The event time that the first fire disturbance event occurs"),
-    defineParameter("fireTimestep", "numeric", 1L,
+    defineParameter("fireTimestep", "numeric", NA,
                     desc = "The number of time units between successive fire events in a fire module"),
-    defineParameter("successionTimestep", "numeric", 10L,
-                    desc = "The number of time units between successive seed dispersal events, the 'LANDIS succession time step'")
+    defineParameter("successionTimestep", "numeric", 10L, NA, NA, "defines the simulation time step, default is 10 years")
   ),
   inputObjects = bind_rows(
     expectsInput("cohortData", "data.table",
@@ -107,6 +106,13 @@ doEvent.Biomass_regeneration <- function(sim, eventTime, eventType) {
 
 ### template initialization
 Init <- function(sim) {
+  ## check parameters
+  if (is.na(P(sim)$fireInitialTime))
+    stop(paste("Please provide a value for `P(sim)$fireInitialTime`.",
+               "It should match the first year of fire."))
+  if (is.na(P(sim)$fireTimestep))
+    stop(paste("Please provide a value for `P(sim)$fireTimestep`.",
+               "It should match the fire time step (fire frequency)."))
   return(invisible(sim))
 }
 
@@ -384,9 +390,8 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
     }
   
   if (!suppliedElsewhere("studyArea", sim)) {
-    message("'studyArea' was not provided by user. Using a polygon in Southwestern Alberta, Canada")
-
-    sim$studyArea <- randomStudyArea(seed = 1234)
+    message("'studyArea' was not provided by user. Using a polygon (6250000 m^2) in southwestern Alberta, Canada")
+    sim$studyArea <- randomStudyArea(seed = 1234, size = (250^2)*100)
   }
 
   ## get LANDISII main input table where species and light requirements tables come from
