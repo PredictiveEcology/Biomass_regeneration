@@ -137,9 +137,13 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
   postFirePixelCohortData <- sim$cohortData[0,]
   postFirePixelCohortData[, `:=`(pixelIndex = integer(),
                                  age = NULL, B = NULL, mortality = NULL,
-                                 aNPPAct = NULL, sumB = NULL)]
-  # postFirePixelCohortData <- data.table(pixelGroup = integer(), ecoregionGroup = numeric(),
-  #                                 speciesCode = numeric(), pixelIndex = integer())
+                                 aNPPAct = NULL)]
+
+  # In some cases sumB exists, but not always -- we want to remove it too here.
+  if (isTRUE("sumB" %in% colnames(postFirePixelCohortData))) {
+    set(postFirePixelCohortData, NULL, "sumB", NULL)
+  }
+
   if(P(sim)$calibrate){
     sim$postFireRegenSummary <- data.table(year = numeric(),
                                            regenMode = character(),
@@ -378,8 +382,8 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
   if (suppliedElsewhere(object = "scfmReturnInterval", sim = sim, where = "sim")) {
     if (P(sim)$fireTimestep != sim$scfmReturnInterval){
       sim@params$Biomass_regeneration$fireTimestep <- sim$scfmReturnInterval
-      message(paste0("Biomass_regeneration detected 'scfm' fire model. Setting fireTimestep to ", 
-                     sim$scfmReturnInterval, 
+      message(paste0("Biomass_regeneration detected 'scfm' fire model. Setting fireTimestep to ",
+                     sim$scfmReturnInterval,
                      " to match it."))
       }
     } else {
@@ -388,7 +392,7 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
         message("fireTimestep is 'NULL'. Setting to 1 unit of time")
       }
     }
-  
+
   if (!suppliedElsewhere("studyArea", sim)) {
     message("'studyArea' was not provided by user. Using a polygon (6250000 m^2) in southwestern Alberta, Canada")
     sim$studyArea <- randomStudyArea(seed = 1234, size = (250^2)*100)
