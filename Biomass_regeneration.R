@@ -92,7 +92,7 @@ doEvent.Biomass_regeneration <- function(sim, eventTime, eventType) {
       if(!is.null(sim$rstCurrentBurn)) {
         sim <- FireDisturbance(sim)
       } else {
-        message(crayon::green("The Biomass_regeneration module is expecting sim$rstCurrentBurn; ",
+        message(crayon::red("The Biomass_regeneration module is expecting sim$rstCurrentBurn; ",
                               " Currently, it does not exist."))
       }
       sim <- scheduleEvent(sim, time(sim) + P(sim)$fireTimestep,
