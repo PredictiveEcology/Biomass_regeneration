@@ -372,12 +372,11 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
   if (suppliedElsewhere(object = "scfmReturnInterval", sim = sim, where = "sim")) {
     if (P(sim)$fireTimestep != sim$scfmReturnInterval){
       sim@params$Biomass_regeneration$fireTimestep <- sim$scfmReturnInterval
-      message(paste0("Biomass_regeneration detected 'scfm' fire model. Setting fireTimestep to ", 
-                     sim$scfmReturnInterval, 
-                     " to match it."))
+      message(paste0("Biomass_regeneration detected 'scfm' fire model. Setting fireTimestep to ",
+                     sim$scfmReturnInterval, " to match it.")) ## TODO: don't hardcode module interdependencies!
       }
     } else {
-      if(is.null(P(sim)$fireTimestep)){
+      if (is.null(P(sim)$fireTimestep)) {
         P(sim)$fireTimestep <- 1L
         message("fireTimestep is 'NULL'. Setting to 1 unit of time")
       }
