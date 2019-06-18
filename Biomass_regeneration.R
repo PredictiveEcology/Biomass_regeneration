@@ -91,7 +91,7 @@ doEvent.Biomass_regeneration <- function(sim, eventTime, eventType) {
       if(!is.null(sim$rstCurrentBurn)) {
         sim <- FireDisturbance(sim)
       } else {
-        message(crayon::green("The Biomass_regeneration module is expecting sim$rstCurrentBurn; ",
+        message(crayon::red("The Biomass_regeneration module is expecting sim$rstCurrentBurn; ",
                               " Currently, it does not exist."))
       }
       sim <- scheduleEvent(sim, time(sim) + P(sim)$fireTimestep,
@@ -383,11 +383,10 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
     if (P(sim)$fireTimestep != sim$scfmReturnInterval){
       sim@params$Biomass_regeneration$fireTimestep <- sim$scfmReturnInterval
       message(paste0("Biomass_regeneration detected 'scfm' fire model. Setting fireTimestep to ",
-                     sim$scfmReturnInterval,
-                     " to match it."))
+                     sim$scfmReturnInterval, " to match it.")) ## TODO: don't hardcode module interdependencies!
       }
     } else {
-      if(is.null(P(sim)$fireTimestep)){
+      if (is.null(P(sim)$fireTimestep)) {
         P(sim)$fireTimestep <- 1L
         message("fireTimestep is 'NULL'. Setting to 1 unit of time")
       }
