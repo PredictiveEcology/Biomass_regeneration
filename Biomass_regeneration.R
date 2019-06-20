@@ -91,7 +91,7 @@ doEvent.Biomass_regeneration <- function(sim, eventTime, eventType) {
       if(!is.null(sim$rstCurrentBurn)) {
         sim <- FireDisturbance(sim)
       } else {
-        message(crayon::green("The Biomass_regeneration module is expecting sim$rstCurrentBurn; ",
+        message(crayon::red("The Biomass_regeneration module is expecting sim$rstCurrentBurn; ",
                               " Currently, it does not exist."))
       }
       sim <- scheduleEvent(sim, time(sim) + P(sim)$fireTimestep,
@@ -137,9 +137,13 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
   postFirePixelCohortData <- sim$cohortData[0,]
   postFirePixelCohortData[, `:=`(pixelIndex = integer(),
                                  age = NULL, B = NULL, mortality = NULL,
-                                 aNPPAct = NULL, sumB = NULL)]
-  # postFirePixelCohortData <- data.table(pixelGroup = integer(), ecoregionGroup = numeric(),
-  #                                 speciesCode = numeric(), pixelIndex = integer())
+                                 aNPPAct = NULL)]
+
+  # In some cases sumB exists, but not always -- we want to remove it too here.
+  if (isTRUE("sumB" %in% colnames(postFirePixelCohortData))) {
+    set(postFirePixelCohortData, NULL, "sumB", NULL)
+  }
+
   if(P(sim)$calibrate){
     sim$postFireRegenSummary <- data.table(year = numeric(),
                                            regenMode = character(),
@@ -375,6 +379,19 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
   dPath <- asPath(getOption("reproducible.destinationPath", dataPath(sim)), 1)
   message(currentModule(sim), ": using dataPath '", dPath, "'.")
 
+  if (suppliedElsewhere(object = "scfmReturnInterval", sim = sim, where = "sim")) {
+    if (P(sim)$fireTimestep != sim$scfmReturnInterval) {
+      sim@params$Biomass_regeneration$fireTimestep <- sim$scfmReturnInterval
+      message(paste0("Biomass_regeneration detected 'scfm' fire model. Setting fireTimestep to ",
+                     sim$scfmReturnInterval, " to match it.")) ## TODO: don't hardcode module interdependencies!
+    }
+  } else {
+    if (is.null(P(sim)$fireTimestep)) {
+      P(sim)$fireTimestep <- 1L
+      message("fireTimestep is 'NULL'. Setting to 1 unit of time")
+    }
+  }
+
   if (!suppliedElsewhere("studyArea", sim)) {
     message("'studyArea' was not provided by user. Using a polygon (6250000 m^2) in southwestern Alberta, Canada")
     sim$studyArea <- randomStudyArea(seed = 1234, size = (250^2)*100)
@@ -439,4 +456,3 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
 
   return(invisible(sim))
 }
-
