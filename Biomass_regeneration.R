@@ -4,9 +4,16 @@
 # in R packages. If exact location is required, functions will be: sim$<moduleName>$FunctionName
 defineModule(sim, list(
   name = "Biomass_regeneration",
-  description = "Post-disturbance biomass regeneration module for LandR. Simulates post-fire mortality, regeneration and serotiny as part of the same event - all occurring sequentially immeadiately after fire. Mortality assumed to be 100%, serotiny and regeneration algorithms taken from LANDIS-II Biomass Succession extension, v3.6.1",
+  description = paste("Post-disturbance biomass regeneration module for LandR. Simulates post-fire mortality,",
+                      "regeneration and serotiny as part of the same event - all occurring sequentially immeadiately after fire.",
+                      "Mortality assumed to be 100%, serotiny and regeneration algorithms taken from LANDIS-II Biomass Succession extension, v3.2.1"),
   keywords = c("biomass regeneration", "LandR", "disturbance", "mortality", "vegetation succession", "vegetation model"),
-  authors = person("Ceres", "Barros", email = "cbarros@mail.ubc.ca", role = c("aut", "cre")),
+  authors = c(
+    person(c("Eliot", "J", "B"), "McIntire", email = "eliot.mcintire@canada.ca", role = c("aut", "cre")),
+    person("Yong", "Luo", email = "yluo1@lakeheadu.ca", role = "aut"),
+    person("Ceres", "Barros", email = "cbarros@mail.ubc.ca", role = "aut"),
+    person(c("Alex", "M."), "Chubaty", email = "achubaty@friresearch.ca", role = "ctb")
+  ),
   childModules = character(0),
   version = list(SpaDES.core = "0.2.3.9009", Biomass_regeneration = "0.1.0"),
   spatialExtent = raster::extent(rep(NA_real_, 4)),
