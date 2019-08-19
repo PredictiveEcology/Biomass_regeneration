@@ -36,9 +36,6 @@ defineModule(sim, list(
     expectsInput("cohortData", "data.table",
                  desc = "age cohort-biomass table hooked to pixel group map by pixelGroupIndex at
                  succession time step"),
-    expectsInput("ecoregionMap", "RasterLayer",
-                 desc = "ecoregion map that has mapcodes match ecoregion table and speciesEcoregion table",
-                 sourceURL = "https://github.com/LANDIS-II-Foundation/Extensions-Succession/raw/master/biomass-succession-archive/trunk/tests/v6.0-2.0/ecoregions.gis"),
     expectsInput("inactivePixelIndex", "logical",
                  desc = "internal use. Keeps track of which pixels are inactive"),
     expectsInput("pixelGroupMap", "RasterLayer",
@@ -432,28 +429,6 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
   if (!suppliedElsewhere("speciesEcoregion", sim)) {
     sim$speciesEcoregion <- prepInputsSpeciesEcoregion(url = extractURL("speciesEcoregion"),
                                                        dPath = dPath, cacheTags = cacheTags)
-  }
-
-  ## load ecoregion map
-  if (!suppliedElsewhere("ecoregionMap", sim )) {
-    ## LANDIS-II demo data:
-
-    ## TODO: restore the demo data version with prepInputs:
-    # sim$ecoregionMap <- Cache(prepInputs,
-    #                           url = extractURL("ecoregionMap"),
-    #                           destinationPath = dPath,
-    #                           targetFile = "ecoregions.gis",
-    #                           fun = "raster::raster")
-
-    ## Dummy version with spatial location in Canada
-    ras <- projectExtent(sim$studyArea, crs = sim$studyArea)
-    res(ras) <- 250 ## TODO: don't hardcode this; get from rasterToMatch?
-    ecoregionMap <- rasterize(sim$studyArea, ras) ## TODO: use fasterize
-
-    ecoregionMap[!is.na(getValues(ecoregionMap))][] <- sample(ecoregion$mapcode,
-                                                              size = sum(!is.na(getValues(ecoregionMap))),
-                                                              replace = TRUE)
-    sim$ecoregionMap <- ecoregionMap
   }
 
   if (!suppliedElsewhere(sim$treedFirePixelTableSinceLastDisp)) {
