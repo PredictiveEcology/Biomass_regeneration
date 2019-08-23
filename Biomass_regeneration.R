@@ -34,8 +34,7 @@ defineModule(sim, list(
   ),
   inputObjects = bind_rows(
     expectsInput("cohortData", "data.table",
-                 desc = "age cohort-biomass table hooked to pixel group map by pixelGroupIndex at
-                 succession time step"),
+                 desc = "age cohort-biomass table hooked to pixel group map by pixelGroupIndex at succession time step."),
     expectsInput("inactivePixelIndex", "logical",
                  desc = "internal use. Keeps track of which pixels are inactive"),
     expectsInput("pixelGroupMap", "RasterLayer",
