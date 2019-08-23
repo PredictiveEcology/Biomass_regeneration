@@ -4,9 +4,16 @@
 # in R packages. If exact location is required, functions will be: sim$<moduleName>$FunctionName
 defineModule(sim, list(
   name = "Biomass_regeneration",
-  description = "Post-disturbance biomass regeneration module for LandR. Simulates post-fire mortality, regeneration and serotiny as part of the same event - all occurring sequentially immeadiately after fire. Mortality assumed to be 100%, serotiny and regeneration algorithms taken from LANDIS-II Biomass Succession extension, v3.6.1",
+  description = paste("Post-disturbance biomass regeneration module for LandR. Simulates post-fire mortality,",
+                      "regeneration and serotiny as part of the same event - all occurring sequentially immeadiately after fire.",
+                      "Mortality assumed to be 100%, serotiny and regeneration algorithms taken from LANDIS-II Biomass Succession extension, v3.2.1"),
   keywords = c("biomass regeneration", "LandR", "disturbance", "mortality", "vegetation succession", "vegetation model"),
-  authors = person("Ceres", "Barros", email = "cbarros@mail.ubc.ca", role = c("aut", "cre")),
+  authors = c(
+    person(c("Eliot", "J", "B"), "McIntire", email = "eliot.mcintire@canada.ca", role = c("aut", "cre")),
+    person("Yong", "Luo", email = "yluo1@lakeheadu.ca", role = "aut"),
+    person("Ceres", "Barros", email = "cbarros@mail.ubc.ca", role = "aut"),
+    person(c("Alex", "M."), "Chubaty", email = "achubaty@friresearch.ca", role = "ctb")
+  ),
   childModules = character(0),
   version = list(SpaDES.core = "0.2.3.9009", Biomass_regeneration = "0.1.0"),
   spatialExtent = raster::extent(rep(NA_real_, 4)),
@@ -27,11 +34,7 @@ defineModule(sim, list(
   ),
   inputObjects = bind_rows(
     expectsInput("cohortData", "data.table",
-                 desc = "age cohort-biomass table hooked to pixel group map by pixelGroupIndex at
-                 succession time step"),
-    expectsInput("ecoregionMap", "RasterLayer",
-                 desc = "ecoregion map that has mapcodes match ecoregion table and speciesEcoregion table",
-                 sourceURL = "https://github.com/LANDIS-II-Foundation/Extensions-Succession/raw/master/biomass-succession-archive/trunk/tests/v6.0-2.0/ecoregions.gis"),
+                 desc = "age cohort-biomass table hooked to pixel group map by pixelGroupIndex at succession time step."),
     expectsInput("inactivePixelIndex", "logical",
                  desc = "internal use. Keeps track of which pixels are inactive"),
     expectsInput("pixelGroupMap", "RasterLayer",
@@ -425,28 +428,6 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
   if (!suppliedElsewhere("speciesEcoregion", sim)) {
     sim$speciesEcoregion <- prepInputsSpeciesEcoregion(url = extractURL("speciesEcoregion"),
                                                        dPath = dPath, cacheTags = cacheTags)
-  }
-
-  ## load ecoregion map
-  if (!suppliedElsewhere("ecoregionMap", sim )) {
-    ## LANDIS-II demo data:
-
-    ## TODO: restore the demo data version with prepInputs:
-    # sim$ecoregionMap <- Cache(prepInputs,
-    #                           url = extractURL("ecoregionMap"),
-    #                           destinationPath = dPath,
-    #                           targetFile = "ecoregions.gis",
-    #                           fun = "raster::raster")
-
-    ## Dummy version with spatial location in Canada
-    ras <- projectExtent(sim$studyArea, crs = sim$studyArea)
-    res(ras) <- 250 ## TODO: don't hardcode this; get from rasterToMatch?
-    ecoregionMap <- rasterize(sim$studyArea, ras) ## TODO: use fasterize
-
-    ecoregionMap[!is.na(getValues(ecoregionMap))][] <- sample(ecoregion$mapcode,
-                                                              size = sum(!is.na(getValues(ecoregionMap))),
-                                                              replace = TRUE)
-    sim$ecoregionMap <- ecoregionMap
   }
 
   if (!suppliedElsewhere(sim$treedFirePixelTableSinceLastDisp)) {
