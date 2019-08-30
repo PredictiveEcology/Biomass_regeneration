@@ -290,7 +290,7 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
   # Eliot: remove next line --- seems wrong to use burnedcohortData, rather than availableToResprout
   #resproutingAssessCohortData <- burnedcohortData[species_temp, nomatch = 0][age >= resproutage_min & age <= resproutage_max]
   set(resproutingPixelCohortData, NULL, c("resproutage_min", "resproutage_max", "postfireregen", "age"), NULL)
-  rm(species_temp)
+  rm(species_temp, availableToResprout)
 
   if (NROW(resproutingPixelCohortData) > 0) {
     ## assess potential resprouting reg: add reprout probability, siteShade/tolerance to the table and assess who resprouts
