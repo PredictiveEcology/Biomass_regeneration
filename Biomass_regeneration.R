@@ -268,7 +268,8 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
   ## make a table of pixels where resprouting occurs.
   if (is.null(serotinyPixel)) {
     resproutingPixelTable <- setkey(treedFirePixelTableSinceLastDisp, pixelGroup)
-    availableToResprout <- burnedcohortData[0,]
+    # availableToResprout <- burnedcohortData[0,]
+    availableToResprout <- copy(burnedcohortData)    ## Ceres - fix
   } else {
     # Replacing here -- ELiot -- THis was removing entire pixels that had successful serotiny -- now only species-pixel combos are removed
     ## should be done by pixel and species -- Eliot: it works ok now because there are no serotinous species that are resprouters
