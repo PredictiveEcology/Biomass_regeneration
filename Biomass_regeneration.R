@@ -34,7 +34,8 @@ defineModule(sim, list(
   ),
   inputObjects = bind_rows(
     expectsInput("cohortData", "data.table",
-                 desc = "age cohort-biomass table hooked to pixel group map by pixelGroupIndex at succession time step."),
+                 desc = "age cohort-biomass table hooked to pixel group map by pixelGroupIndex at
+                 succession time step"),
     expectsInput("inactivePixelIndex", "logical",
                  desc = "internal use. Keeps track of which pixels are inactive"),
     expectsInput("pixelGroupMap", "RasterLayer",
@@ -335,7 +336,7 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
       serotinyResproutSuccessPixels <- c(serotinyPixel, unique(resproutingPixelCohortData$pixelIndex))
       sim$serotinyResproutSuccessPixels <- serotinyResproutSuccessPixels # send it to a sim object
       rm(resproutingPixelCohortData)
-    } else{
+    } else {
       sim$serotinyResproutSuccessPixels <- serotinyPixel
     }
   } else {
