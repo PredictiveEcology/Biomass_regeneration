@@ -95,8 +95,8 @@ doEvent.Biomass_regeneration <- function(sim, eventTime, eventType) {
       if(!is.null(sim$rstCurrentBurn)) {
         sim <- FireDisturbance(sim)
       } else {
-        message(crayon::red("The Biomass_regeneration module is expecting sim$rstCurrentBurn; ",
-                              " Currently, it does not exist."))
+        message(crayon::red(paste0("The Biomass_regeneration module is expecting sim$rstCurrentBurn;\n",
+                                   "Currently, it does not exist, so no regeneration will happen")))
       }
       sim <- scheduleEvent(sim, time(sim) + P(sim)$fireTimestep,
                            "Biomass_regeneration", "fireDisturbance",
@@ -169,10 +169,9 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
   } else {
     burnedLoci
   }
-  treedFirePixelTableSinceLastDisp <-
-    data.table(pixelIndex = as.integer(treedBurnLoci),
-               pixelGroup = as.integer(getValues(sim$pixelGroupMap)[treedBurnLoci]),
-               burnTime = time(sim))
+  treedFirePixelTableSinceLastDisp <- data.table(pixelIndex = as.integer(treedBurnLoci),
+                                                 pixelGroup = as.integer(getValues(sim$pixelGroupMap)[treedBurnLoci]),
+                                                 burnTime = time(sim))
   sim$treedFirePixelTableSinceLastDisp[, pixelGroup := as.integer(getValues(sim$pixelGroupMap))[pixelIndex]]
   # append previous year's
   treedFirePixelTableSinceLastDisp <- rbindlist(list(sim$treedFirePixelTableSinceLastDisp,
