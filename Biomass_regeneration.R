@@ -180,10 +180,16 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
   burnedPixelCohortData <- sim$cohortData[pixelGroup %in% unique(treedFirePixelTableSinceLastDisp$pixelGroup)]
   set(burnedPixelCohortData, NULL, c("B", "mortality", "aNPPAct"), NULL)
 
+  ## select the pixels that have burned survivors and assess them
+  burnedPixelTable <- treedFirePixelTableSinceLastDisp[pixelGroup %in% unique(burnedPixelCohortData$pixelGroup)]
+  ## expadn table to pixels
+  burnedPixelCohortData <- burnedPixelTable[burnedPixelCohortData, allow.cartesian = TRUE,
+                                            nomatch = 0, on = "pixelGroup"] ##
+
   ## CALCULATE SIDE SHADE -----------------------------
   # assume the fire burns all cohorts on site - siteShade calc is no longer part of serotiny.
   # sumB is not actually necessary, but added for consistency w/ Biomass_regenerationPM
-  set(burnedPixelCohortData, NULL,c("sumB", "siteShade"), 0)
+  set(burnedPixelCohortData, NULL, c("sumB", "siteShade"), 0)
   setkey(burnedPixelCohortData, speciesCode)
 
   ## DO SEROTINY -----------------------------
