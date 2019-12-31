@@ -171,10 +171,12 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
   treedFirePixelTableSinceLastDisp <- data.table(pixelIndex = as.integer(treedBurnLoci),
                                                  pixelGroup = as.integer(getValues(sim$pixelGroupMap)[treedBurnLoci]),
                                                  burnTime = time(sim))
-  sim$treedFirePixelTableSinceLastDisp[, pixelGroup := as.integer(getValues(sim$pixelGroupMap))[pixelIndex]]
-  # append previous year's
-  treedFirePixelTableSinceLastDisp <- rbindlist(list(sim$treedFirePixelTableSinceLastDisp,
-                                                     treedFirePixelTableSinceLastDisp))
+  ## TODO: Ceres: maybe this should come at the end, lest we introduce pixelGroups taht burned in previous years,
+  ## but aren't currently burning
+  # sim$treedFirePixelTableSinceLastDisp[, pixelGroup := as.integer(getValues(sim$pixelGroupMap))[pixelIndex]]
+  # # append previous year's
+  # treedFirePixelTableSinceLastDisp <- rbindlist(list(sim$treedFirePixelTableSinceLastDisp,
+  #                                                    treedFirePixelTableSinceLastDisp))
 
   ## make table spp/ecoregionGroup/age in burnt pixels
   burnedPixelCohortData <- sim$cohortData[pixelGroup %in% unique(treedFirePixelTableSinceLastDisp$pixelGroup)]
@@ -196,7 +198,7 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
   ## assess potential serotiny reg: add sexual maturity to the table and compare w/ age
   ## as long as one cohort is sexually mature, serotiny is activated
   serotinyOutputs <- doSerotiny(burnedPixelCohortData = burnedPixelCohortData,
-                                species = sim$species, simuTime = time(sim),
+                                species = sim$species, currentTime = time(sim),
                                 treedFirePixelTableSinceLastDisp = treedFirePixelTableSinceLastDisp,
                                 sufficientLight = sim$sufficientLight,
                                 speciesEcoregion = sim$speciesEcoregion,
@@ -219,7 +221,7 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
                                       treedFirePixelTableSinceLastDisp = treedFirePixelTableSinceLastDisp,
                                       burnedPixelCohortData = burnedPixelCohortData,
                                       postFirePixelCohortData = postFirePixelCohortData,
-                                      simuTime = time(sim), species = sim$species,
+                                      currentTime = time(sim), species = sim$species,
                                       sufficientLight = sim$sufficientLight,
                                       calibrate = P(sim)$calibrate,
                                       postFireRegenSummary = sim$postFireRegenSummary)
@@ -260,6 +262,12 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
   }
 
   sim$lastFireYear <- time(sim)
+  ## TODO: Ceres potential bug fix. Move this from beggining to here.
+  sim$treedFirePixelTableSinceLastDisp[, pixelGroup := as.integer(getValues(sim$pixelGroupMap))[pixelIndex]]
+  # append previous year's
+  treedFirePixelTableSinceLastDisp <- rbindlist(list(sim$treedFirePixelTableSinceLastDisp,
+                                                     treedFirePixelTableSinceLastDisp))
+
   sim$treedFirePixelTableSinceLastDisp <- treedFirePixelTableSinceLastDisp
   return(invisible(sim))
 }
