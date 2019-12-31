@@ -198,7 +198,7 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
   ## assess potential serotiny reg: add sexual maturity to the table and compare w/ age
   ## as long as one cohort is sexually mature, serotiny is activated
   serotinyOutputs <- doSerotiny(burnedPixelCohortData = burnedPixelCohortData,
-                                species = sim$species, currentTime = time(sim),
+                                species = sim$species, simuTime = time(sim),
                                 treedFirePixelTableSinceLastDisp = treedFirePixelTableSinceLastDisp,
                                 sufficientLight = sim$sufficientLight,
                                 speciesEcoregion = sim$speciesEcoregion,
@@ -221,7 +221,7 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
                                       treedFirePixelTableSinceLastDisp = treedFirePixelTableSinceLastDisp,
                                       burnedPixelCohortData = burnedPixelCohortData,
                                       postFirePixelCohortData = postFirePixelCohortData,
-                                      currentTime = time(sim), species = sim$species,
+                                      simuTime = time(sim), species = sim$species,
                                       sufficientLight = sim$sufficientLight,
                                       calibrate = P(sim)$calibrate,
                                       postFireRegenSummary = sim$postFireRegenSummary)
