@@ -12,7 +12,7 @@ defineModule(sim, list(
     person(c("Eliot", "J", "B"), "McIntire", email = "eliot.mcintire@canada.ca", role = c("aut", "cre")),
     person("Yong", "Luo", email = "yluo1@lakeheadu.ca", role = "aut"),
     person("Ceres", "Barros", email = "cbarros@mail.ubc.ca", role = "aut"),
-    person(c("Alex", "M."), "Chubaty", email = "achubaty@friresearch.ca", role = "ctb")
+    person(c("Alex", "M."), "Chubaty", email = "achubaty@for-cast.ca", role = "ctb")
   ),
   childModules = character(0),
   version = list(SpaDES.core = "0.2.3.9009",
