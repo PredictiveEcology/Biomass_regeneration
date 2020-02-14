@@ -56,9 +56,13 @@ defineModule(sim, list(
                  sourceURL = ""),
     expectsInput("sufficientLight", "data.frame",
                  desc = "table defining how the species with different shade tolerance respond to stand shadeness",
-                 sourceURL = "https://raw.githubusercontent.com/LANDIS-II-Foundation/Extensions-Succession/master/biomass-succession-archive/trunk/tests/v6.0-2.0/biomass-succession_test.txt"),
+                 sourceURL = paste0("https://raw.githubusercontent.com/LANDIS-II-Foundation/
+                                    Extensions-Succession/master/biomass-succession-archive/
+                                    trunk/tests/v6.0-2.0/biomass-succession_test.txt")),
     expectsInput("treedFirePixelTableSinceLastDisp", "data.table",
-                 desc = "3 columns: pixelIndex, pixelGroup, and burnTime. Each row represents a forested pixel that was burned up to and including this year, since last dispersal event, with its corresponding pixelGroup and time it occurred")
+                 desc = paste("3 columns: pixelIndex, pixelGroup, and burnTime.",
+                              "Each row represents a forested pixel that was burned up to and including this year,",
+                              "since last dispersal event, with its corresponding pixelGroup and time it occurred"))
   ),
   outputObjects = bind_rows(
     createsOutput("cohortData", "data.table",
@@ -73,7 +77,9 @@ defineModule(sim, list(
     createsOutput("postFireRegenSummary", "data.table",
                   desc = "summary table of species post-fire regeneration"),
     createsOutput("treedFirePixelTableSinceLastDisp", "data.table",
-                  desc = "3 columns: pixelIndex, pixelGroup, and burnTime. Each row represents a forested pixel that was burned up to and including this year, since last dispersal event, with its corresponding pixelGroup and time it occurred")
+                  desc = paste("3 columns: pixelIndex, pixelGroup, and burnTime.",
+                               "Each row represents a forested pixel that was burned up to and including this year,",
+                               "since last dispersal event, with its corresponding pixelGroup and time it occurred"))
   )
 ))
 
