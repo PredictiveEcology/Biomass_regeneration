@@ -16,7 +16,7 @@ defineModule(sim, list(
   ),
   childModules = character(0),
   version = list(SpaDES.core = "0.2.3.9009",
-                 Biomass_regeneration = "0.1.0",
+                 Biomass_regeneration = "0.1.9000",
                  LandR = "0.0.3.9000", SpaDES.core = "0.2.7"),
   spatialExtent = raster::extent(rep(NA_real_, 4)),
   timeframe = as.POSIXlt(c(NA, NA)),
