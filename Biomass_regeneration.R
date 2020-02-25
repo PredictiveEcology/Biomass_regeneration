@@ -136,10 +136,6 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
       stop("sim$cohortData has duplicated rows, i.e., multiple rows with the same pixelGroup, speciesCode and age")
     }
   }
-  # if (time(sim) >= 11) {
-  #   browser()
-  #   aaaa <<- 1
-  # }
 
   postFirePixelCohortData <- sim$cohortData[0,]
   postFirePixelCohortData[, `:=`(pixelIndex = integer(),
