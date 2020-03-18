@@ -1,4 +1,4 @@
 # Biomass_regeneration
 
-Post-disturbance biomass regeneration module for LandR
+Post-disturbance biomass regeneration module for LandR Biomass
 
