@@ -16,7 +16,7 @@ defineModule(sim, list(
   ),
   childModules = character(0),
   version = list(SpaDES.core = "0.2.3.9009",
-                 Biomass_regeneration = "0.1.0",
+                 Biomass_regeneration = "0.1.9000",
                  LandR = "0.0.3.9000", SpaDES.core = "0.2.7"),
   spatialExtent = raster::extent(rep(NA_real_, 4)),
   timeframe = as.POSIXlt(c(NA, NA)),
@@ -50,10 +50,6 @@ defineModule(sim, list(
     expectsInput("speciesEcoregion", "data.table",
                  desc = "table defining the maxANPP, maxB and SEP, which can change with both ecoregion and simulation time",
                  sourceURL = "https://raw.githubusercontent.com/LANDIS-II-Foundation/Extensions-Succession/master/biomass-succession-archive/trunk/tests/v6.0-2.0/biomass-succession-dynamic-inputs_test.txt"),
-    expectsInput("studyArea", "SpatialPolygonsDataFrame",
-                 desc = paste("Polygon to use as the study area.",
-                             "Defaults to  an area in Southwestern Alberta, Canada."),
-                 sourceURL = ""),
     expectsInput("sufficientLight", "data.frame",
                  desc = "table defining how the species with different shade tolerance respond to stand shadeness",
                  sourceURL = paste0("https://raw.githubusercontent.com/LANDIS-II-Foundation/
@@ -140,10 +136,6 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
       stop("sim$cohortData has duplicated rows, i.e., multiple rows with the same pixelGroup, speciesCode and age")
     }
   }
-  # if (time(sim) >= 11) {
-  #   browser()
-  #   aaaa <<- 1
-  # }
 
   postFirePixelCohortData <- sim$cohortData[0,]
   postFirePixelCohortData[, `:=`(pixelIndex = integer(),
@@ -301,11 +293,6 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
     }
   }
 
-  if (!suppliedElsewhere("studyArea", sim)) {
-    message("'studyArea' was not provided by user. Using a polygon (6250000 m^2) in southwestern Alberta, Canada")
-    sim$studyArea <- randomStudyArea(seed = 1234, size = (250^2)*100)
-  }
-
   ## get LANDISII main input table where species and light requirements tables come from
   if (!suppliedElsewhere("sufficientLight", sim) |
       (!suppliedElsewhere("species", sim))) {
@@ -319,7 +306,7 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
 
   ## make light requirements table
   if (!suppliedElsewhere("sufficientLight", sim)) {
-    sufficientLight <- data.frame(mainInput)
+    sufficientLight <- data.frame(mainInput, stringsAsFactors = FALSE)
     startRow <- which(sufficientLight$col1 == "SufficientLight")
     sufficientLight <- sufficientLight[(startRow + 1):(startRow + 5), 1:7]
     sufficientLight <- data.table(sufficientLight)
@@ -327,7 +314,7 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
 
     names(sufficientLight) <- c("speciesshadetolerance",
                                 "X0", "X1", "X2", "X3", "X4", "X5")
-    sim$sufficientLight <- data.frame(sufficientLight)
+    sim$sufficientLight <- data.frame(sufficientLight, stringsAsFactors = FALSE)
   }
 
   #  # input species ecoregion dynamics table
