@@ -306,7 +306,7 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
 
   ## make light requirements table
   if (!suppliedElsewhere("sufficientLight", sim)) {
-    sufficientLight <- data.frame(mainInput)
+    sufficientLight <- data.frame(mainInput, stringsAsFactors = FALSE)
     startRow <- which(sufficientLight$col1 == "SufficientLight")
     sufficientLight <- sufficientLight[(startRow + 1):(startRow + 5), 1:7]
     sufficientLight <- data.table(sufficientLight)
@@ -314,7 +314,7 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
 
     names(sufficientLight) <- c("speciesshadetolerance",
                                 "X0", "X1", "X2", "X3", "X4", "X5")
-    sim$sufficientLight <- data.frame(sufficientLight)
+    sim$sufficientLight <- data.frame(sufficientLight, stringsAsFactors = FALSE)
   }
 
   #  # input species ecoregion dynamics table
