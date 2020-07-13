@@ -17,17 +17,20 @@ defineModule(sim, list(
   childModules = character(0),
   version = list(SpaDES.core = "0.2.3.9009",
                  Biomass_regeneration = "0.1.9000",
-                 LandR = "0.0.3.9000", SpaDES.core = "0.2.7"),
+                 LandR = '0.0.7',
+                 SpaDES.core = "0.2.7"),
   spatialExtent = raster::extent(rep(NA_real_, 4)),
   timeframe = as.POSIXlt(c(NA, NA)),
   timeunit = "year",
   citation = list("citation.bib"),
   documentation = list("README.txt", "Biomass_regeneration.Rmd"),
   reqdPkgs = list("crayon", "data.table", "raster", ## TODO: update package list!
-                  "PredictiveEcology/LandR@development",
+                  "PredictiveEcology/LandR@development  (>=0.0.7)",
                   "PredictiveEcology/pemisc@development"),
   parameters = rbind(
     defineParameter("calibrate", "logical", FALSE, desc = "Do calibration? Defaults to FALSE"),
+    defineParameter("cohortDefinitionCols", 'character', c("pixelGroup", 'age', 'speciesCode'), NA, NA,
+                    desc = 'columns in cohortData that determine unique cohorts'),
     defineParameter("fireInitialTime", "numeric", NA,
                     desc = "The event time that the first fire disturbance event occurs"),
     defineParameter("fireTimestep", "numeric", NA,
@@ -132,7 +135,7 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
   # may be a supplemenatary function is needed to convert non-logical map
   # to a logical map
   if (isTRUE(getOption("LandR.assertions"))) {
-    if (!identical(NROW(sim$cohortData), NROW(unique(sim$cohortData, by = c("pixelGroup", "speciesCode", "age", "B"))))) {
+    if (!identical(NROW(sim$cohortData), NROW(unique(sim$cohortData, by = P(sim)$cohortDefinitionCols)))) {
       stop("sim$cohortData has duplicated rows, i.e., multiple rows with the same pixelGroup, speciesCode and age")
     }
   }
@@ -249,6 +252,7 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
                                pixelGroupMap = sim$pixelGroupMap,
                                currentTime = round(time(sim)),
                                speciesEcoregion = sim$speciesEcoregion,
+                               cohortDefinitionCols = P(sim)$cohortDefinitionCols,
                                treedFirePixelTableSinceLastDisp = treedFirePixelTableSinceLastDisp,
                                successionTimestep = P(sim)$successionTimestep)
 
