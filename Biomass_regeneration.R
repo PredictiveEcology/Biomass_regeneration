@@ -33,7 +33,7 @@ defineModule(sim, list(
                     desc = 'columns in cohortData that determine unique cohorts'),
     defineParameter("fireInitialTime", "numeric", NA,
                     desc = "The event time that the first fire disturbance event occurs"),
-    defineParameter("fireTimestep", "numeric", NA,
+    defineParameter("fireTimestep", "numeric", 1, NA, NA,
                     desc = "The number of time units between successive fire events in a fire module"),
     defineParameter("successionTimestep", "numeric", 10L, NA, NA, "defines the simulation time step, default is 10 years")
   ),
@@ -283,20 +283,7 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
   cacheTags <- c(currentModule(sim), "function:.inputObjects")
   dPath <- asPath(getOption("reproducible.destinationPath", dataPath(sim)), 1)
   message(currentModule(sim), ": using dataPath '", dPath, "'.")
-
-  if (suppliedElsewhere(object = "scfmReturnInterval", sim = sim, where = "sim")) {
-    if (P(sim)$fireTimestep != sim$scfmReturnInterval) {
-      sim@params$Biomass_regeneration$fireTimestep <- sim$scfmReturnInterval
-      message(paste0("Biomass_regeneration detected 'scfm' fire model. Setting fireTimestep to ",
-                     sim$scfmReturnInterval, " to match it.")) ## TODO: don't hardcode module interdependencies!
-    }
-  } else {
-    if (is.null(P(sim)$fireTimestep)) {
-      P(sim)$fireTimestep <- 1L
-      message("fireTimestep is 'NULL'. Setting to 1 unit of time")
-    }
-  }
-
+  
   ## get LANDISII main input table where species and light requirements tables come from
   if (!suppliedElsewhere("sufficientLight", sim) |
       (!suppliedElsewhere("species", sim))) {
@@ -327,7 +314,7 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
                                                        dPath = dPath, cacheTags = cacheTags)
   }
 
-  if (!suppliedElsewhere(sim$treedFirePixelTableSinceLastDisp)) {
+  if (!suppliedElsewhere('treedFirePixelTableSinceLastDisp', sim)) {
     sim$treedFirePixelTableSinceLastDisp <- data.table(pixelIndex = integer(), pixelGroup = integer(),
                                                        burnTime = numeric())
   }
