@@ -117,12 +117,14 @@ doEvent.Biomass_regeneration <- function(sim, eventTime, eventType) {
 ### template initialization
 Init <- function(sim) {
   ## check parameters
-  if (is.na(P(sim)$fireInitialTime))
+  if (is.na(P(sim)$fireInitialTime)){
     stop(paste("Please provide a value for `P(sim)$fireInitialTime`.",
                "It should match the first year of fire."))
-  if (is.na(P(sim)$fireTimestep))
+  }
+  if (is.na(P(sim)$fireTimestep)) {
     stop(paste("Please provide a value for `P(sim)$fireTimestep`.",
                "It should match the fire time step (fire frequency)."))
+  }
   return(invisible(sim))
 }
 
