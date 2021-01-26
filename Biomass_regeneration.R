@@ -37,7 +37,7 @@ defineModule(sim, list(
                     desc = "The number of time units between successive fire events in a fire module"),
     defineParameter("successionTimestep", "numeric", 10L, NA, NA, "defines the simulation time step, default is 10 years")
   ),
-  inputObjects = bind_rows(
+  inputObjects = bindrows(
     expectsInput("cohortData", "data.table",
                  desc = "age cohort-biomass table hooked to pixel group map by pixelGroupIndex at
                  succession time step"),
@@ -63,7 +63,7 @@ defineModule(sim, list(
                               "Each row represents a forested pixel that was burned up to and including this year,",
                               "since last dispersal event, with its corresponding pixelGroup and time it occurred"))
   ),
-  outputObjects = bind_rows(
+  outputObjects = bindrows(
     createsOutput("cohortData", "data.table",
                   desc = paste("age cohort-biomass table hooked to pixel group map",
                                "by pixelGroupIndex at succession time step")),
@@ -117,12 +117,14 @@ doEvent.Biomass_regeneration <- function(sim, eventTime, eventType) {
 ### template initialization
 Init <- function(sim) {
   ## check parameters
-  if (is.na(P(sim)$fireInitialTime))
+  if (is.na(P(sim)$fireInitialTime)){
     stop(paste("Please provide a value for `P(sim)$fireInitialTime`.",
                "It should match the first year of fire."))
-  if (is.na(P(sim)$fireTimestep))
+  }
+  if (is.na(P(sim)$fireTimestep)) {
     stop(paste("Please provide a value for `P(sim)$fireTimestep`.",
                "It should match the fire time step (fire frequency)."))
+  }
   return(invisible(sim))
 }
 
