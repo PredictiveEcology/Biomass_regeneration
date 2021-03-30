@@ -15,22 +15,22 @@ defineModule(sim, list(
     person(c("Alex", "M."), "Chubaty", email = "achubaty@for-cast.ca", role = "ctb")
   ),
   childModules = character(0),
-  version = list(SpaDES.core = "0.2.3.9009",
-                 Biomass_regeneration = "0.1.9000",
-                 LandR = "0.0.3.9000", SpaDES.core = "0.2.7"),
+  version = list(Biomass_regeneration = "0.1.9000"),
   spatialExtent = raster::extent(rep(NA_real_, 4)),
   timeframe = as.POSIXlt(c(NA, NA)),
   timeunit = "year",
   citation = list("citation.bib"),
   documentation = list("README.txt", "Biomass_regeneration.Rmd"),
   reqdPkgs = list("crayon", "data.table", "raster", ## TODO: update package list!
-                  "PredictiveEcology/LandR@development",
+                  "PredictiveEcology/LandR@development (>= 1.0.0.9001)",
                   "PredictiveEcology/pemisc@development"),
   parameters = rbind(
     defineParameter("calibrate", "logical", FALSE, desc = "Do calibration? Defaults to FALSE"),
+    defineParameter("cohortDefinitionCols", 'character', c("pixelGroup", 'age', 'speciesCode'), NA, NA,
+                    desc = 'columns in cohortData that determine unique cohorts'),
     defineParameter("fireInitialTime", "numeric", NA,
                     desc = "The event time that the first fire disturbance event occurs"),
-    defineParameter("fireTimestep", "numeric", NA,
+    defineParameter("fireTimestep", "numeric", 1, NA, NA,
                     desc = "The number of time units between successive fire events in a fire module"),
     defineParameter("successionTimestep", "numeric", 10L, NA, NA, "defines the simulation time step, default is 10 years")
   ),
@@ -114,12 +114,14 @@ doEvent.Biomass_regeneration <- function(sim, eventTime, eventType) {
 ### template initialization
 Init <- function(sim) {
   ## check parameters
-  if (is.na(P(sim)$fireInitialTime))
+  if (is.na(P(sim)$fireInitialTime)){
     stop(paste("Please provide a value for `P(sim)$fireInitialTime`.",
                "It should match the first year of fire."))
-  if (is.na(P(sim)$fireTimestep))
+  }
+  if (is.na(P(sim)$fireTimestep)) {
     stop(paste("Please provide a value for `P(sim)$fireTimestep`.",
                "It should match the fire time step (fire frequency)."))
+  }
   return(invisible(sim))
 }
 
@@ -132,7 +134,7 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
   # may be a supplemenatary function is needed to convert non-logical map
   # to a logical map
   if (isTRUE(getOption("LandR.assertions"))) {
-    if (!identical(NROW(sim$cohortData), NROW(unique(sim$cohortData, by = c("pixelGroup", "speciesCode", "age", "B"))))) {
+    if (!identical(NROW(sim$cohortData), NROW(unique(sim$cohortData, by = P(sim)$cohortDefinitionCols)))) {
       stop("sim$cohortData has duplicated rows, i.e., multiple rows with the same pixelGroup, speciesCode and age")
     }
   }
@@ -249,6 +251,7 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
                                pixelGroupMap = sim$pixelGroupMap,
                                currentTime = round(time(sim)),
                                speciesEcoregion = sim$speciesEcoregion,
+                               cohortDefinitionCols = P(sim)$cohortDefinitionCols,
                                treedFirePixelTableSinceLastDisp = treedFirePixelTableSinceLastDisp,
                                successionTimestep = P(sim)$successionTimestep)
 
@@ -280,19 +283,6 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
   dPath <- asPath(getOption("reproducible.destinationPath", dataPath(sim)), 1)
   message(currentModule(sim), ": using dataPath '", dPath, "'.")
 
-  if (suppliedElsewhere(object = "scfmReturnInterval", sim = sim, where = "sim")) {
-    if (P(sim)$fireTimestep != sim$scfmReturnInterval) {
-      sim@params$Biomass_regeneration$fireTimestep <- sim$scfmReturnInterval
-      message(paste0("Biomass_regeneration detected 'scfm' fire model. Setting fireTimestep to ",
-                     sim$scfmReturnInterval, " to match it.")) ## TODO: don't hardcode module interdependencies!
-    }
-  } else {
-    if (is.null(P(sim)$fireTimestep)) {
-      P(sim)$fireTimestep <- 1L
-      message("fireTimestep is 'NULL'. Setting to 1 unit of time")
-    }
-  }
-
   ## get LANDISII main input table where species and light requirements tables come from
   if (!suppliedElsewhere("sufficientLight", sim) |
       (!suppliedElsewhere("species", sim))) {
@@ -323,7 +313,7 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
                                                        dPath = dPath, cacheTags = cacheTags)
   }
 
-  if (!suppliedElsewhere(sim$treedFirePixelTableSinceLastDisp)) {
+  if (!suppliedElsewhere('treedFirePixelTableSinceLastDisp', sim)) {
     sim$treedFirePixelTableSinceLastDisp <- data.table(pixelIndex = integer(), pixelGroup = integer(),
                                                        burnTime = numeric())
   }
