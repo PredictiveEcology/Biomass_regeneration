@@ -1,12 +1,10 @@
-# Everything in this file gets sourced during simInit, and all functions and objects
-# are put into the simList. To use objects, use sim$xxx, and are thus globally available
-# to all modules. Functions can be used without sim$ as they are namespaced, like functions
-# in R packages. If exact location is required, functions will be: sim$<moduleName>$FunctionName
 defineModule(sim, list(
   name = "Biomass_regeneration",
-  description = paste("Post-disturbance biomass regeneration module for LandR. Simulates post-fire mortality,",
-                      "regeneration and serotiny as part of the same event - all occurring sequentially immeadiately after fire.",
-                      "Mortality assumed to be 100%, serotiny and regeneration algorithms taken from LANDIS-II Biomass Succession extension, v3.2.1"),
+  description = paste(
+    "Post-disturbance biomass regeneration module for LandR. Simulates post-fire mortality,",
+    "regeneration and serotiny as part of the same event - all occurring sequentially immeadiately after fire.",
+    "Mortality assumed to be 100%, serotiny and regeneration algorithms taken from LANDIS-II Biomass Succession extension, v3.2.1"
+  ),
   keywords = c("biomass regeneration", "LandR", "disturbance", "mortality", "vegetation succession", "vegetation model"),
   authors = c(
     person(c("Eliot", "J", "B"), "McIntire", email = "eliot.mcintire@canada.ca", role = c("aut", "cre")),
@@ -36,8 +34,8 @@ defineModule(sim, list(
   ),
   inputObjects = bindrows(
     expectsInput("cohortData", "data.table",
-                 desc = "age cohort-biomass table hooked to pixel group map by pixelGroupIndex at
-                 succession time step"),
+                 desc = paste("age cohort-biomass table hooked to pixel group map by
+                              `pixelGroupIndex` at succession time step")),
     expectsInput("inactivePixelIndex", "logical",
                  desc = "internal use. Keeps track of which pixels are inactive"),
     expectsInput("pixelGroupMap", "RasterLayer",
@@ -51,10 +49,10 @@ defineModule(sim, list(
                  desc = "table defining the maxANPP, maxB and SEP, which can change with both ecoregion and simulation time",
                  sourceURL = "https://raw.githubusercontent.com/LANDIS-II-Foundation/Extensions-Succession/master/biomass-succession-archive/trunk/tests/v6.0-2.0/biomass-succession-dynamic-inputs_test.txt"),
     expectsInput("sufficientLight", "data.frame",
-                 desc = "table defining how the species with different shade tolerance respond to stand shadeness",
-                 sourceURL = paste0("https://raw.githubusercontent.com/LANDIS-II-Foundation/
-                                    Extensions-Succession/master/biomass-succession-archive/
-                                    trunk/tests/v6.0-2.0/biomass-succession_test.txt")),
+                 desc = "table defining how the species with different shade tolerance respond to stand shadiness",
+                 sourceURL = paste0("https://raw.githubusercontent.com/LANDIS-II-Foundation/",
+                                    "Extensions-Succession/master/biomass-succession-archive/",
+                                    "trunk/tests/v6.0-2.0/biomass-succession_test.txt")),
     expectsInput("treedFirePixelTableSinceLastDisp", "data.table",
                  desc = paste("3 columns: pixelIndex, pixelGroup, and burnTime.",
                               "Each row represents a forested pixel that was burned up to and including this year,",
