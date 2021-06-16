@@ -20,7 +20,7 @@ defineModule(sim, list(
   citation = list("citation.bib"),
   documentation = list("README.txt", "Biomass_regeneration.Rmd"),
   reqdPkgs = list("crayon", "data.table", "raster", ## TODO: update package list!
-                  "PredictiveEcology/LandR@development (>= 1.0.0.9001)",
+                  "PredictiveEcology/LandR@development (>= 1.0.3)",
                   "PredictiveEcology/pemisc@development"),
   parameters = rbind(
     defineParameter("calibrate", "logical", FALSE, desc = "Do calibration? Defaults to FALSE"),
@@ -70,6 +70,11 @@ defineModule(sim, list(
                   desc = "Pixels that were successfully regenerated via serotiny or resprouting. This is a subset of treedBurnLoci"),
     createsOutput("postFireRegenSummary", "data.table",
                   desc = "summary table of species post-fire regeneration"),
+    createsOutput("severityBMap", "RasterLayer",
+                  desc = "A map of fire severity, as in the amount of post-fire mortality (biomass loss)"),
+    createsOutput("severityData", "data.table",
+                  desc = "A data.table of pixel fire severity, as in the amount of post-fire mortality (biomass loss).
+                  May also have severity class used to calculate mortality."),
     createsOutput("treedFirePixelTableSinceLastDisp", "data.table",
                   desc = paste("3 columns: pixelIndex, pixelGroup, and burnTime.",
                                "Each row represents a forested pixel that was burned up to and including this year,",
@@ -186,7 +191,19 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
   burnedPixelTable <- treedFirePixelTableSinceLastDisp[pixelGroup %in% unique(burnedPixelCohortData$pixelGroup)]
   ## expadn table to pixels
   burnedPixelCohortData <- burnedPixelTable[burnedPixelCohortData, allow.cartesian = TRUE,
-                                            nomatch = 0, on = "pixelGroup"] ##
+                                            nomatch = 0, on = "pixelGroup"]
+
+  ## CALCULATE SEVERITY -----------------------------
+  ## add biomass-based severity to severityData
+  severityData <- calcSeverityB(sim$cohortData, burnedPixelCohortData)
+
+  ## make severity map
+  severityBMap <- setValues(sim$rasterToMatch, rep(NA, ncell(sim$rasterToMatch)))
+  severityBMap[severityData$pixelIndex] <- severityData$severityB
+
+  ## export DT and map
+  sim$severityBMap <- severityBMap
+  sim$severityData <- severityData
 
   ## CALCULATE SIDE SHADE -----------------------------
   # assume the fire burns all cohorts on site - siteShade calc is no longer part of serotiny.
