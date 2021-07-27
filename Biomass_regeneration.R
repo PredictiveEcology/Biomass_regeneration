@@ -1,12 +1,10 @@
-# Everything in this file gets sourced during simInit, and all functions and objects
-# are put into the simList. To use objects, use sim$xxx, and are thus globally available
-# to all modules. Functions can be used without sim$ as they are namespaced, like functions
-# in R packages. If exact location is required, functions will be: sim$<moduleName>$FunctionName
 defineModule(sim, list(
   name = "Biomass_regeneration",
-  description = paste("Post-disturbance biomass regeneration module for LandR. Simulates post-fire mortality,",
-                      "regeneration and serotiny as part of the same event - all occurring sequentially immeadiately after fire.",
-                      "Mortality assumed to be 100%, serotiny and regeneration algorithms taken from LANDIS-II Biomass Succession extension, v3.2.1"),
+  description = paste(
+    "Post-disturbance biomass regeneration module for LandR. Simulates post-fire mortality,",
+    "regeneration and serotiny as part of the same event - all occurring sequentially immeadiately after fire.",
+    "Mortality assumed to be 100%, serotiny and regeneration algorithms taken from LANDIS-II Biomass Succession extension, v3.2.1"
+  ),
   keywords = c("biomass regeneration", "LandR", "disturbance", "mortality", "vegetation succession", "vegetation model"),
   authors = c(
     person(c("Eliot", "J", "B"), "McIntire", email = "eliot.mcintire@canada.ca", role = c("aut", "cre")),
@@ -22,7 +20,7 @@ defineModule(sim, list(
   citation = list("citation.bib"),
   documentation = list("README.txt", "Biomass_regeneration.Rmd"),
   reqdPkgs = list("crayon", "data.table", "raster", ## TODO: update package list!
-                  "PredictiveEcology/LandR@development (>= 1.0.0.9001)",
+                  "PredictiveEcology/LandR@development (>= 1.0.3.0001)",
                   "PredictiveEcology/pemisc@development"),
   parameters = rbind(
     defineParameter("calibrate", "logical", FALSE, desc = "Do calibration? Defaults to FALSE"),
@@ -36,8 +34,8 @@ defineModule(sim, list(
   ),
   inputObjects = bindrows(
     expectsInput("cohortData", "data.table",
-                 desc = "age cohort-biomass table hooked to pixel group map by pixelGroupIndex at
-                 succession time step"),
+                 desc = paste("age cohort-biomass table hooked to pixel group map by
+                              `pixelGroupIndex` at succession time step")),
     expectsInput("inactivePixelIndex", "logical",
                  desc = "internal use. Keeps track of which pixels are inactive"),
     expectsInput("pixelGroupMap", "RasterLayer",
@@ -51,10 +49,10 @@ defineModule(sim, list(
                  desc = "table defining the maxANPP, maxB and SEP, which can change with both ecoregion and simulation time",
                  sourceURL = "https://raw.githubusercontent.com/LANDIS-II-Foundation/Extensions-Succession/master/biomass-succession-archive/trunk/tests/v6.0-2.0/biomass-succession-dynamic-inputs_test.txt"),
     expectsInput("sufficientLight", "data.frame",
-                 desc = "table defining how the species with different shade tolerance respond to stand shadeness",
-                 sourceURL = paste0("https://raw.githubusercontent.com/LANDIS-II-Foundation/
-                                    Extensions-Succession/master/biomass-succession-archive/
-                                    trunk/tests/v6.0-2.0/biomass-succession_test.txt")),
+                 desc = "table defining how the species with different shade tolerance respond to stand shadiness",
+                 sourceURL = paste0("https://raw.githubusercontent.com/LANDIS-II-Foundation/",
+                                    "Extensions-Succession/master/biomass-succession-archive/",
+                                    "trunk/tests/v6.0-2.0/biomass-succession_test.txt")),
     expectsInput("treedFirePixelTableSinceLastDisp", "data.table",
                  desc = paste("3 columns: pixelIndex, pixelGroup, and burnTime.",
                               "Each row represents a forested pixel that was burned up to and including this year,",
@@ -72,6 +70,11 @@ defineModule(sim, list(
                   desc = "Pixels that were successfully regenerated via serotiny or resprouting. This is a subset of treedBurnLoci"),
     createsOutput("postFireRegenSummary", "data.table",
                   desc = "summary table of species post-fire regeneration"),
+    createsOutput("severityBMap", "RasterLayer",
+                  desc = "A map of fire severity, as in the amount of post-fire mortality (biomass loss)"),
+    createsOutput("severityData", "data.table",
+                  desc = "A data.table of pixel fire severity, as in the amount of post-fire mortality (biomass loss).
+                  May also have severity class used to calculate mortality."),
     createsOutput("treedFirePixelTableSinceLastDisp", "data.table",
                   desc = paste("3 columns: pixelIndex, pixelGroup, and burnTime.",
                                "Each row represents a forested pixel that was burned up to and including this year,",
@@ -188,7 +191,19 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
   burnedPixelTable <- treedFirePixelTableSinceLastDisp[pixelGroup %in% unique(burnedPixelCohortData$pixelGroup)]
   ## expadn table to pixels
   burnedPixelCohortData <- burnedPixelTable[burnedPixelCohortData, allow.cartesian = TRUE,
-                                            nomatch = 0, on = "pixelGroup"] ##
+                                            nomatch = 0, on = "pixelGroup"]
+
+  ## CALCULATE SEVERITY -----------------------------
+  ## add biomass-based severity to severityData
+  severityData <- calcSeverityB(sim$cohortData, burnedPixelCohortData)
+
+  ## make severity map
+  severityBMap <- setValues(sim$rasterToMatch, rep(NA, ncell(sim$rasterToMatch)))
+  severityBMap[severityData$pixelIndex] <- severityData$severityB
+
+  ## export DT and map
+  sim$severityBMap <- severityBMap
+  sim$severityData <- severityData
 
   ## CALCULATE SIDE SHADE -----------------------------
   # assume the fire burns all cohorts on site - siteShade calc is no longer part of serotiny.
