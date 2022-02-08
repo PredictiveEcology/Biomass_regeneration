@@ -20,7 +20,7 @@ defineModule(sim, list(
   citation = list("citation.bib"),
   documentation = list("README.txt", "Biomass_regeneration.Rmd"),
   reqdPkgs = list("crayon", "data.table", "raster", ## TODO: update package list!
-                  "PredictiveEcology/LandR@development (>= 1.0.3.0001)",
+                  "PredictiveEcology/LandR@development (>= 1.0.0.9003)",
                   "PredictiveEcology/pemisc@development"),
   parameters = rbind(
     defineParameter("calibrate", "logical", FALSE, desc = "Do calibration? Defaults to FALSE"),
@@ -30,7 +30,8 @@ defineModule(sim, list(
                     desc = "The event time that the first fire disturbance event occurs"),
     defineParameter("fireTimestep", "numeric", 1, NA, NA,
                     desc = "The number of time units between successive fire events in a fire module"),
-    defineParameter("successionTimestep", "numeric", 10L, NA, NA, "defines the simulation time step, default is 10 years")
+    defineParameter("successionTimestep", "numeric", 10L, NA, NA, "defines the simulation time step, default is 10 years"),
+    defineParameter("initialB", "numeric", 10, NA, NA, "the initial biomass of a new age-1 cohort")
   ),
   inputObjects = bindrows(
     expectsInput("cohortData", "data.table",
@@ -268,6 +269,7 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
                                speciesEcoregion = sim$speciesEcoregion,
                                cohortDefinitionCols = P(sim)$cohortDefinitionCols,
                                treedFirePixelTableSinceLastDisp = treedFirePixelTableSinceLastDisp,
+                               initialB = P(sim)$initialB,
                                successionTimestep = P(sim)$successionTimestep)
 
       sim$cohortData <- outs$cohortData
