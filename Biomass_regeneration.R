@@ -174,9 +174,16 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
   } else {
     burnedLoci
   }
-  treedFirePixelTableSinceLastDisp <- data.table(pixelIndex = as.integer(treedBurnLoci),
-                                                 pixelGroup = as.integer(getValues(sim$pixelGroupMap)[treedBurnLoci]),
-                                                 burnTime = time(sim))
+  treedFirePixelTableSinceLastDisp <- if (length(treedBurnLoci) > 0) {
+    data.table(pixelIndex = as.integer(treedBurnLoci),
+               pixelGroup = as.integer(getValues(sim$pixelGroupMap)[treedBurnLoci]),
+               burnTime = time(sim))
+  } else {
+    data.table(pixelIndex = integer(0),
+               pixelGroup = integer(0),
+               burnTime = numeric(0))
+  }
+
   ## TODO: Ceres: maybe this should come at the end, lest we introduce pixelGroups taht burned in previous years,
   ## but aren't currently burning
   # sim$treedFirePixelTableSinceLastDisp[, pixelGroup := as.integer(getValues(sim$pixelGroupMap))[pixelIndex]]
