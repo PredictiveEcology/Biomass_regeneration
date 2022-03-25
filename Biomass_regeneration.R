@@ -20,7 +20,7 @@ defineModule(sim, list(
   citation = list("citation.bib"),
   documentation = list("README.txt", "Biomass_regeneration.Rmd"),
   reqdPkgs = list("crayon", "data.table", "raster", ## TODO: update package list!
-                  "PredictiveEcology/LandR@development (>= 1.0.3.0001)",
+                  "PredictiveEcology/LandR@development (>= 1.0.7.9003)",
                   "PredictiveEcology/pemisc@development"),
   parameters = rbind(
     defineParameter("calibrate", "logical", FALSE, desc = "Do calibration? Defaults to FALSE"),
@@ -30,7 +30,8 @@ defineModule(sim, list(
                     desc = "The event time that the first fire disturbance event occurs"),
     defineParameter("fireTimestep", "numeric", 1, NA, NA,
                     desc = "The number of time units between successive fire events in a fire module"),
-    defineParameter("successionTimestep", "numeric", 10L, NA, NA, "defines the simulation time step, default is 10 years")
+    defineParameter("successionTimestep", "numeric", 10L, NA, NA, "defines the simulation time step, default is 10 years"),
+    defineParameter("initialB", "numeric", 10, NA, NA, "the initial biomass of a new age-1 cohort")
   ),
   inputObjects = bindrows(
     expectsInput("cohortData", "data.table",
@@ -117,7 +118,7 @@ doEvent.Biomass_regeneration <- function(sim, eventTime, eventType) {
 ### template initialization
 Init <- function(sim) {
   ## check parameters
-  if (is.na(P(sim)$fireInitialTime)){
+  if (is.na(P(sim)$fireInitialTime)) {
     stop(paste("Please provide a value for `P(sim)$fireInitialTime`.",
                "It should match the first year of fire."))
   }
@@ -173,9 +174,16 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
   } else {
     burnedLoci
   }
-  treedFirePixelTableSinceLastDisp <- data.table(pixelIndex = as.integer(treedBurnLoci),
-                                                 pixelGroup = as.integer(getValues(sim$pixelGroupMap)[treedBurnLoci]),
-                                                 burnTime = time(sim))
+  treedFirePixelTableSinceLastDisp <- if (length(treedBurnLoci) > 0) {
+    data.table(pixelIndex = as.integer(treedBurnLoci),
+               pixelGroup = as.integer(getValues(sim$pixelGroupMap)[treedBurnLoci]),
+               burnTime = time(sim))
+  } else {
+    data.table(pixelIndex = integer(0),
+               pixelGroup = integer(0),
+               burnTime = numeric(0))
+  }
+
   ## TODO: Ceres: maybe this should come at the end, lest we introduce pixelGroups taht burned in previous years,
   ## but aren't currently burning
   # sim$treedFirePixelTableSinceLastDisp[, pixelGroup := as.integer(getValues(sim$pixelGroupMap))[pixelIndex]]
@@ -268,6 +276,7 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
                                speciesEcoregion = sim$speciesEcoregion,
                                cohortDefinitionCols = P(sim)$cohortDefinitionCols,
                                treedFirePixelTableSinceLastDisp = treedFirePixelTableSinceLastDisp,
+                               initialB = P(sim)$initialB,
                                successionTimestep = P(sim)$successionTimestep)
 
       sim$cohortData <- outs$cohortData
