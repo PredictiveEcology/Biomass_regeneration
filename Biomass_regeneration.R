@@ -30,6 +30,10 @@ defineModule(sim, list(
                     desc = "The event time that the first fire disturbance event occurs"),
     defineParameter("fireTimestep", "numeric", 1, NA, NA,
                     desc = "The number of time units between successive fire events in a fire module"),
+    defineParameter("initialB", "numeric", 10, 1, NA,
+                    desc = paste("initial biomass values of new age-1 cohorts.",
+                                 "If `NA` or `NULL`, initial biomass will be calculated as in LANDIS-II Biomass Suc. Extension",
+                                 "(see Scheller and Miranda, 2015 or `?LandR::.initiateNewCohorts`)")),
     defineParameter("successionTimestep", "numeric", 10L, NA, NA, "defines the simulation time step, default is 10 years"),
     defineParameter("initialB", "numeric", 10, NA, NA, "the initial biomass of a new age-1 cohort")
   ),
@@ -126,6 +130,9 @@ Init <- function(sim) {
     stop(paste("Please provide a value for `P(sim)$fireTimestep`.",
                "It should match the fire time step (fire frequency)."))
   }
+
+  paramCheckOtherMods(sim, "initialB", ifSetButDifferent = "warning")
+
   return(invisible(sim))
 }
 
