@@ -406,14 +406,15 @@ mySimOut &lt;- spades(mySim)</code></pre>
 <div id="parameters" class="section level1">
 <h1>Parameters</h1>
 <p>Provide a summary of user-visible parameters.</p>
+<pre><code>## defineParameter: &#39;.plotInitialTime&#39; is not of specified type &#39;numeric&#39;.</code></pre>
 <table>
 <colgroup>
-<col width="16%"></col>
 <col width="8%"></col>
-<col width="10%"></col>
-<col width="3%"></col>
-<col width="3%"></col>
-<col width="57%"></col>
+<col width="4%"></col>
+<col width="5%"></col>
+<col width="1%"></col>
+<col width="1%"></col>
+<col width="79%"></col>
 </colgroup>
 <thead>
 <tr class="header">
@@ -459,6 +460,14 @@ mySimOut &lt;- spades(mySim)</code></pre>
 <td align="left">The number of time units between successive fire events in a fire module</td>
 </tr>
 <tr class="odd">
+<td align="left">initialB</td>
+<td align="left">numeric</td>
+<td align="left">10</td>
+<td align="left">1</td>
+<td align="left">NA</td>
+<td align="left">initial biomass values of new age-1 cohorts. If <code>NA</code> or <code>NULL</code>, initial biomass will be calculated as in LANDIS-II Biomass Suc. Extension (see Scheller and Miranda, 2015 or <code>?LandR::.initiateNewCohorts</code>)</td>
+</tr>
+<tr class="even">
 <td align="left">successionTimestep</td>
 <td align="left">numeric</td>
 <td align="left">10</td>
@@ -466,13 +475,53 @@ mySimOut &lt;- spades(mySim)</code></pre>
 <td align="left">NA</td>
 <td align="left">defines the simulation time step, default is 10 years</td>
 </tr>
+<tr class="odd">
+<td align="left">.plots</td>
+<td align="left">character</td>
+<td align="left">screen</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">Used by Plots function, which can be optionally used here</td>
+</tr>
 <tr class="even">
-<td align="left">initialB</td>
+<td align="left">.plotInitialTime</td>
 <td align="left">numeric</td>
-<td align="left">10</td>
+<td align="left">start(sim)</td>
 <td align="left">NA</td>
 <td align="left">NA</td>
-<td align="left">the initial biomass of a new age-1 cohort</td>
+<td align="left">This describes the simulation time at which the first plot event should occur</td>
+</tr>
+<tr class="odd">
+<td align="left">.plotInterval</td>
+<td align="left">numeric</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">This describes the simulation time interval between plot events</td>
+</tr>
+<tr class="even">
+<td align="left">.saveInitialTime</td>
+<td align="left">numeric</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">This describes the simulation time at which the first save event should occur</td>
+</tr>
+<tr class="odd">
+<td align="left">.saveInterval</td>
+<td align="left">numeric</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">This describes the simulation time interval between save events</td>
+</tr>
+<tr class="even">
+<td align="left">.useCache</td>
+<td align="left">character</td>
+<td align="left">.inputOb….</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">Should this entire module be run with caching activated? This is generally intended for data-type modules, where stochasticity and time are not relevant</td>
 </tr>
 </tbody>
 </table>
@@ -485,6 +534,7 @@ mySimOut &lt;- spades(mySim)</code></pre>
 <h1>Data dependencies</h1>
 <div id="input-data" class="section level2">
 <h2>Input data</h2>
+<pre><code>## defineParameter: &#39;.plotInitialTime&#39; is not of specified type &#39;numeric&#39;.</code></pre>
 <table>
 <colgroup>
 <col width="7%"></col>
@@ -555,6 +605,7 @@ mySimOut &lt;- spades(mySim)</code></pre>
 <div id="output-data" class="section level2">
 <h2>Output data</h2>
 <p>Description of the module outputs.</p>
+<pre><code>## defineParameter: &#39;.plotInitialTime&#39; is not of specified type &#39;numeric&#39;.</code></pre>
 <table>
 <colgroup>
 <col width="12%"></col>
