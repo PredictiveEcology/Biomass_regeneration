@@ -7,7 +7,7 @@ defineModule(sim, list(
   ),
   keywords = c("biomass regeneration", "LandR", "disturbance", "mortality", "vegetation succession", "vegetation model"),
   authors = c(
-    person(c("Eliot", "J", "B"), "McIntire", email = "eliot.mcintire@canada.ca", role = c("aut", "cre")),
+    person(c("Eliot", "J", "B"), "McIntire", email = "eliot.mcintire@nrcan-rncan.gc.ca", role = c("aut", "cre")),
     person("Yong", "Luo", email = "yluo1@lakeheadu.ca", role = "aut"),
     person("Ceres", "Barros", email = "cbarros@mail.ubc.ca", role = "aut"),
     person(c("Alex", "M."), "Chubaty", email = "achubaty@for-cast.ca", role = "ctb")
@@ -20,7 +20,7 @@ defineModule(sim, list(
   citation = list("citation.bib"),
   documentation = list("README.txt", "Biomass_regeneration.Rmd"),
   reqdPkgs = list("crayon", "data.table", "raster", ## TODO: update package list!
-                  "PredictiveEcology/LandR@development (>= 1.0.7.9003)",
+                  "PredictiveEcology/LandR@development (>= 1.0.7.9023)",
                   "PredictiveEcology/pemisc@development"),
   parameters = rbind(
     defineParameter("calibrate", "logical", FALSE, desc = "Do calibration? Defaults to FALSE"),
