@@ -90,8 +90,8 @@ defineModule(sim, list(
     createsOutput("severityBMap", "RasterLayer",
                   desc = "A map of fire severity, as in the amount of post-fire mortality (biomass loss)"),
     createsOutput("severityData", "data.table",
-                  desc = "A data.table of pixel fire severity, as in the amount of post-fire mortality (biomass loss).
-                  May also have severity class used to calculate mortality."),
+                  desc = paste("A data.table of pixel fire severity, as in the amount of post-fire mortality (biomass loss).",
+                               "May also have severity class used to calculate mortality.")),
     createsOutput("treedFirePixelTableSinceLastDisp", "data.table",
                   desc = paste("3 columns: pixelIndex, pixelGroup, and burnTime.",
                                "Each row represents a forested pixel that was burned up to and including this year,",
