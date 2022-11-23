@@ -119,7 +119,7 @@ doEvent.Biomass_regeneration <- function(sim, eventTime, eventType) {
         sim <- FireDisturbance(sim)
       } else {
         message(crayon::red(paste0("The Biomass_regeneration module is expecting sim$rstCurrentBurn;\n",
-                                   "Currently, it does not exist, so no regeneration will happen")))
+                                   "Currently, it does not exist, so no regeneration will happen.")))
       }
       sim <- scheduleEvent(sim, time(sim) + P(sim)$fireTimestep,
                            "Biomass_regeneration", "fireDisturbance",
@@ -189,7 +189,7 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
   burnedLoci <- which(getValues(sim$rstCurrentBurn) > 0)
   treedBurnLoci <- if (length(sim$inactivePixelIndex) > 0) {
     # These can burn other vegetation (grassland, wetland)
-    burnedLoci[!(burnedLoci %in% sim$inactivePixelIndex)] # this is to prevent avaluating the pixels that are inactive
+    burnedLoci[!(burnedLoci %in% sim$inactivePixelIndex)] # this is to prevent evaluating the pixels that are inactive
   } else {
     burnedLoci
   }
