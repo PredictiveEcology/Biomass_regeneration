@@ -57,6 +57,8 @@ defineModule(sim, list(
                  desc = "internal use. Keeps track of which pixels are inactive"),
     expectsInput("pixelGroupMap", "RasterLayer",
                  desc = "updated community map at each succession time step"),
+    expectsInput("rasterToMatch", "RasterLayer",
+                 desc = "a raster of the `studyArea`."),
     expectsInput("rstCurrentBurn", "RasterLayer",
                  desc = "Binary raster of fires, 1 meaning 'burned', 0 or NA is non-burned"),
     expectsInput("species", "data.table",
