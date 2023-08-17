@@ -7,26 +7,26 @@ defineModule(sim, list(
   ),
   keywords = c("biomass regeneration", "LandR", "disturbance", "mortality", "vegetation succession", "vegetation model"),
   authors = c(
-    person(c("Eliot", "J", "B"), "McIntire", email = "eliot.mcintire@canada.ca", role = c("aut", "cre")),
+    person(c("Eliot", "J", "B"), "McIntire", email = "eliot.mcintire@nrcan-rncan.gc.ca", role = c("aut", "cre")),
     person("Yong", "Luo", email = "yluo1@lakeheadu.ca", role = "aut"),
     person("Ceres", "Barros", email = "cbarros@mail.ubc.ca", role = "aut"),
     person(c("Alex", "M."), "Chubaty", email = "achubaty@for-cast.ca", role = "ctb")
   ),
   childModules = character(0),
-  version = list(Biomass_regeneration = "0.1.9000"),
+  version = list(Biomass_regeneration = "0.2.0"),
   spatialExtent = raster::extent(rep(NA_real_, 4)),
   timeframe = as.POSIXlt(c(NA, NA)),
   timeunit = "year",
   citation = list("citation.bib"),
   documentation = list("README.txt", "Biomass_regeneration.Rmd"),
   reqdPkgs = list("crayon", "data.table", "raster", ## TODO: update package list!
-                  "PredictiveEcology/LandR@development (>= 1.0.7.9003)",
+                  "PredictiveEcology/LandR@development (>= 1.0.7.9023)",
                   "PredictiveEcology/pemisc@development"),
   parameters = rbind(
-    defineParameter("calibrate", "logical", FALSE, desc = "Do calibration? Defaults to FALSE"),
-    defineParameter("cohortDefinitionCols", 'character', c("pixelGroup", 'age', 'speciesCode'), NA, NA,
-                    desc = 'columns in cohortData that determine unique cohorts'),
-    defineParameter("fireInitialTime", "numeric", NA,
+    defineParameter("calibrate", "logical", FALSE, NA, NA, desc = "Do calibration? Defaults to FALSE"),
+    defineParameter("cohortDefinitionCols", "character", c("pixelGroup", "age", "speciesCode"), NA, NA,
+                    desc = "columns in cohortData that determine unique cohorts"),
+    defineParameter("fireInitialTime", "numeric", start(sim, "year") + 1, NA, NA,
                     desc = "The event time that the first fire disturbance event occurs"),
     defineParameter("fireTimestep", "numeric", 1, NA, NA,
                     desc = "The number of time units between successive fire events in a fire module"),
@@ -37,7 +37,7 @@ defineModule(sim, list(
     defineParameter("successionTimestep", "numeric", 10L, NA, NA, "defines the simulation time step, default is 10 years"),
     defineParameter(".plots", "character", "screen", NA, NA,
                     "Used by Plots function, which can be optionally used here"),
-    defineParameter(".plotInitialTime", "numeric", start(sim), NA, NA,
+    defineParameter(".plotInitialTime", "numeric", start(sim, "year"), NA, NA,
                     "This describes the simulation time at which the first plot event should occur"),
     defineParameter(".plotInterval", "numeric", NA, NA, NA,
                     "This describes the simulation time interval between plot events"),
@@ -57,6 +57,8 @@ defineModule(sim, list(
                  desc = "internal use. Keeps track of which pixels are inactive"),
     expectsInput("pixelGroupMap", "RasterLayer",
                  desc = "updated community map at each succession time step"),
+    expectsInput("rasterToMatch", "RasterLayer",
+                 desc = "a raster of the `studyArea`."),
     expectsInput("rstCurrentBurn", "RasterLayer",
                  desc = "Binary raster of fires, 1 meaning 'burned', 0 or NA is non-burned"),
     expectsInput("species", "data.table",
@@ -119,7 +121,7 @@ doEvent.Biomass_regeneration <- function(sim, eventTime, eventType) {
         sim <- FireDisturbance(sim)
       } else {
         message(crayon::red(paste0("The Biomass_regeneration module is expecting sim$rstCurrentBurn;\n",
-                                   "Currently, it does not exist, so no regeneration will happen")))
+                                   "Currently, it does not exist, so no regeneration will happen.")))
       }
       sim <- scheduleEvent(sim, time(sim) + P(sim)$fireTimestep,
                            "Biomass_regeneration", "fireDisturbance",
@@ -189,7 +191,7 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
   burnedLoci <- which(getValues(sim$rstCurrentBurn) > 0)
   treedBurnLoci <- if (length(sim$inactivePixelIndex) > 0) {
     # These can burn other vegetation (grassland, wetland)
-    burnedLoci[!(burnedLoci %in% sim$inactivePixelIndex)] # this is to prevent avaluating the pixels that are inactive
+    burnedLoci[!(burnedLoci %in% sim$inactivePixelIndex)] # this is to prevent evaluating the pixels that are inactive
   } else {
     burnedLoci
   }
