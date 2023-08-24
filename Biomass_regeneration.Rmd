@@ -1,19 +1,50 @@
 ---
-title: "Biomass_regeneration"
-author: "Eliot McIntire, Alex M Chubaty, Ceres Barros"
-date: "11 May 2021"
+title: "Biomass_regeneration Manual"
+subtitle: "v.`r SpaDES.core::moduleMetadata(module = 'Biomass_regeneration', path = '..')$version`"
+date: "Last updated: `r Sys.Date()`"
 output:
-  html_document:
+  bookdown::html_document2:
+    toc: true
+    toc_float: true
+    theme: sandstone
+    number_sections: false
+    df_print: paged
     keep_md: yes
 editor_options:
   chunk_output_type: console
+  bibliography: citations/references_Biomass_regeneration.bib
+link-citations: true
+always_allow_html: true
 ---
 
-```{r setup-Biomass_regeneration, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, eval = FALSE, results = "hold")
+# Biomass_regeneration Module
+
+<!-- the following are text references used in captions for LaTeX compatibility -->
+(ref:Biomass-regeneration) *Biomass_regeneration*
+
+```{r setup-Biomass-regeneration, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = FALSE, results = "hold") ## change to eval = TRUE if all chunks are to be evaluated
+
+if (!require(dplyr)) {
+  install.packages("dplyr")
+  library(dplyr)
+}
+
+dir.create("figures", showWarnings = FALSE)
+
+download.file(url = "https://img.shields.io/badge/Made%20with-Markdown-1f425f.png",
+              destfile = "figures/markdownBadge.png",
+              mode = 'wb')
 ```
 
-# Overview
+#### Authors:
+
+`r paste(as.character(SpaDES.core::moduleMetadata(module = "Biomass_regeneration", path = '..')$authors), sep = ', ')`
+<!-- ideally separate authors with new lines, '\n' not working -->
+
+## Module Overview
+
+### Module summary
 
 Biomass_regeneration is a SpaDES module that simulates post-disturbance regeneration mechanisms for Biomass_core.
 As such, this module is mostly based on the post-disturbance regeneration mechanisms present in LANDIS-II Biomass Succession v3.2.1 extension (see [LANDIS-II Biomass Succession v3.2 User Guide](https://github.com/LANDIS-II-Foundation/Extension-Biomass-Succession/blob/master/docs/LANDIS-II%20Biomass%20Succession%20v3.2%20User%20Guide.docx) and [Scheller and Mladenoff (2004)](https://pdfs.semanticscholar.org/4d38/d0be6b292eccd444af399775d37a757d1967.pdf).
@@ -39,76 +70,46 @@ According to the manual:
 This is no longer the case in Biomass_regeneration, where both serotinity and resprouting can occur in the same pixel, although not for the same species.
 We feel that this is more realistic ecologically, as resprouters will typically regenerate faster  after a fire, often shading serotinous species and creating interesting successional feedbacks (e.g. light-loving serotinous species having to "wait" for canopy gaps to germinate).
 
-## General flow of Biomass_regeneration processes - fire disturbances only
+### General flow of Biomass_regeneration processes - fire disturbances only
 
 1. Removal of biomass in disturbed, i.e. burnt, pixels
 2. Activation of serotiny for serotinous species present before the fire
 3. Activation of resprouting for resprouter species present before the fire and for which serotiny was not activated
 4. Establishment/growth of species for which serotiny or resprouting were activated
 
-# Usage
+### Module inputs and parameters
 
-```{r module_usage}
-library(SpaDES)
+Table \@ref(tab:moduleInputs-Biomass-regeneration) shows the full list of module inputs.
 
-setPaths()
-getPaths() # shows where the 4 relevant paths are
-
-times <- list(start = 0, end = 10)
-
-parameters <- list(
-  #.progress = list(type = "text", interval = 1), # for a progress bar
-  ## If there are further modules, each can have its own set of parameters:
-  #module1 = list(param1 = value1, param2 = value2),
-  #module2 = list(param1 = value1, param2 = value2)
-)
-modules <- list("Biomass_regeneration")
-objects <- list()
-inputs <- list()
-outputs <- list()
-
-mySim <- simInit(times = times, params = parameters, modules = modules,
-                 objects = objects)
-
-mySimOut <- spades(mySim)
-```
-
-# Parameters
-
-Provide a summary of user-visible parameters.
-
-```{r moduleParams, echo = FALSE, eval = TRUE}
-df_params <- SpaDES.core::moduleParams("Biomass_regeneration", "..")
-knitr::kable(df_params)
-```
-
-# Events
-
-Describe what happens for each event type.
-
-# Data dependencies
-
-## Input data
-
-```{r moduleInputs, echo = FALSE, eval = TRUE}
+```{r moduleInputs-Biomass-regeneration, echo = FALSE, eval = TRUE, message = FALSE, warning = FALSE}
 df_inputs <- SpaDES.core::moduleInputs("Biomass_regeneration", "..")
-knitr::kable(df_inputs)
+knitr::kable(df_inputs,
+             caption = "List of (ref:Biomass-regeneration) input objects and their description.") %>%
+  kableExtra::kable_styling(latex_options = "scale_down", full_width = TRUE)
 ```
 
-## Output data
+Summary of user-visible parameters (Table \@ref(tab:moduleParams-Biomass-regeneration)):
 
-Description of the module outputs.
+```{r moduleParams-Biomass-regeneration, echo = FALSE, eval = TRUE, message = FALSE, warning = FALSE}
+df_params <- SpaDES.core::moduleParams("Biomass_regeneration", "..")
+knitr::kable(df_params, caption = "List of (ref:Biomass-regeneration) parameters and their description.") %>%
+  kableExtra::kable_styling(latex_options = "scale_down", full_width = TRUE)
+```
 
-```{r moduleOutputs, echo = FALSE, eval = TRUE}
+### Module outputs
+
+Description of the module outputs (Table \@ref(tab:moduleOutputs-Biomass-regeneration)).
+
+```{r moduleOutputs-Biomass-regeneration, echo = FALSE, eval = TRUE, message = FALSE, warning = FALSE}
 df_outputs <- SpaDES.core::moduleOutputs("Biomass_regeneration", "..")
-knitr::kable(df_outputs)
+knitr::kable(df_outputs, caption = "List of (ref:Biomass-regeneration) outputs and their description.") %>%
+  kableExtra::kable_styling(latex_options = "scale_down", full_width = TRUE)
 ```
 
-# Links to other modules
+### Links to other modules
 
 Primarily used with the LandR Biomass suite of modules, namely [Biomass_core](https://github.com/PredictiveEcology/Biomass_core).
 
 ## Getting help
 
 - <https://gitter.im/PredictiveEcology/LandR_Biomass>
-
