@@ -27,13 +27,12 @@ if (!require(dplyr)) {
   install.packages("dplyr")
   library(dplyr)
 }
-
-dir.create("figures", showWarnings = FALSE)
-
-download.file(url = "https://img.shields.io/badge/Made%20with-Markdown-1f425f.png",
-              destfile = "figures/markdownBadge.png",
-              mode = 'wb')
 ```
+
+:::{.rmdwarning}
+This documentation is work in progress.
+Please report any discrepancies or omissions at <https://github.com/PredictiveEcology/Biomass_regeneration/issues>.
+:::
 
 #### Authors:
 
