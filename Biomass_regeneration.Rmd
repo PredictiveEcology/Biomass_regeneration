@@ -1,5 +1,5 @@
 ---
-title: "Biomass_regeneration Manual"
+title: "LandR _Biomass_regeneration_ Manual"
 subtitle: "v.`r SpaDES.core::moduleMetadata(module = 'Biomass_regeneration', path = '..')$version`"
 date: "Last updated: `r Sys.Date()`"
 output:
@@ -16,8 +16,6 @@ editor_options:
 link-citations: true
 always_allow_html: true
 ---
-
-# Biomass_regeneration Module
 
 <!-- the following are text references used in captions for LaTeX compatibility -->
 (ref:Biomass-regeneration) *Biomass_regeneration*
