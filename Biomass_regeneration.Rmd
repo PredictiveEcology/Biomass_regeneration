@@ -82,7 +82,7 @@ Table \@ref(tab:moduleInputs-Biomass-regeneration) shows the full list of module
 df_inputs <- SpaDES.core::moduleInputs("Biomass_regeneration", "..")
 knitr::kable(df_inputs,
              caption = "List of (ref:Biomass-regeneration) input objects and their description.") %>%
-  kableExtra::kable_styling(latex_options = "scale_down", full_width = TRUE)
+  kableExtra::kable_styling(latex_options = "scale_down", full_width = FALSE)
 ```
 
 Summary of user-visible parameters (Table \@ref(tab:moduleParams-Biomass-regeneration)):
@@ -90,7 +90,7 @@ Summary of user-visible parameters (Table \@ref(tab:moduleParams-Biomass-regener
 ```{r moduleParams-Biomass-regeneration, echo = FALSE, eval = TRUE, message = FALSE, warning = FALSE}
 df_params <- SpaDES.core::moduleParams("Biomass_regeneration", "..")
 knitr::kable(df_params, caption = "List of (ref:Biomass-regeneration) parameters and their description.") %>%
-  kableExtra::kable_styling(latex_options = "scale_down", full_width = TRUE)
+  kableExtra::kable_styling(latex_options = "scale_down", full_width = FALSE)
 ```
 
 ### Module outputs
@@ -100,7 +100,7 @@ Description of the module outputs (Table \@ref(tab:moduleOutputs-Biomass-regener
 ```{r moduleOutputs-Biomass-regeneration, echo = FALSE, eval = TRUE, message = FALSE, warning = FALSE}
 df_outputs <- SpaDES.core::moduleOutputs("Biomass_regeneration", "..")
 knitr::kable(df_outputs, caption = "List of (ref:Biomass-regeneration) outputs and their description.") %>%
-  kableExtra::kable_styling(latex_options = "scale_down", full_width = TRUE)
+  kableExtra::kable_styling(latex_options = "scale_down", full_width = FALSE)
 ```
 
 ### Links to other modules
