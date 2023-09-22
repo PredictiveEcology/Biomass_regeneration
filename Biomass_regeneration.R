@@ -13,14 +13,14 @@ defineModule(sim, list(
     person(c("Alex", "M."), "Chubaty", email = "achubaty@for-cast.ca", role = "ctb")
   ),
   childModules = character(0),
-  version = list(Biomass_regeneration = "0.2.0"),
+  version = list(Biomass_regeneration = "1.0.0"),
   spatialExtent = raster::extent(rep(NA_real_, 4)),
   timeframe = as.POSIXlt(c(NA, NA)),
   timeunit = "year",
   citation = list("citation.bib"),
   documentation = list("README.txt", "Biomass_regeneration.Rmd"),
-  reqdPkgs = list("crayon", "data.table", "raster", ## TODO: update package list!
-                  "PredictiveEcology/LandR@development (>= 1.0.7.9023)",
+  reqdPkgs = list("crayon", "data.table", "raster", "terra", ## TODO: update package list!
+                  "PredictiveEcology/LandR@development (>= 1.1.0.9063)",
                   "PredictiveEcology/pemisc@development"),
   parameters = rbind(
     defineParameter("calibrate", "logical", FALSE, NA, NA, desc = "Do calibration? Defaults to FALSE"),
@@ -188,7 +188,7 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
   # }
 
   ## extract burn pixel indices/groups and remove potentially inactive pixels
-  burnedLoci <- which(getValues(sim$rstCurrentBurn) > 0)
+  burnedLoci <- which(as.vector(sim$rstCurrentBurn[]) > 0)
   treedBurnLoci <- if (length(sim$inactivePixelIndex) > 0) {
     # These can burn other vegetation (grassland, wetland)
     burnedLoci[!(burnedLoci %in% sim$inactivePixelIndex)] # this is to prevent evaluating the pixels that are inactive
@@ -197,7 +197,7 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
   }
   treedFirePixelTableSinceLastDisp <- if (length(treedBurnLoci) > 0) {
     data.table(pixelIndex = as.integer(treedBurnLoci),
-               pixelGroup = as.integer(getValues(sim$pixelGroupMap)[treedBurnLoci]),
+               pixelGroup = as.integer(as.vector(sim$pixelGroupMap)[treedBurnLoci]),
                burnTime = time(sim))
   } else {
     data.table(pixelIndex = integer(0),
@@ -205,9 +205,9 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
                burnTime = numeric(0))
   }
 
-  ## TODO: Ceres: maybe this should come at the end, lest we introduce pixelGroups taht burned in previous years,
+  ## TODO: Ceres: maybe this should come at the end, lest we introduce pixelGroups that burned in previous years,
   ## but aren't currently burning
-  # sim$treedFirePixelTableSinceLastDisp[, pixelGroup := as.integer(getValues(sim$pixelGroupMap))[pixelIndex]]
+  # sim$treedFirePixelTableSinceLastDisp[, pixelGroup := as.integer(as.vector(sim$pixelGroupMap[]))[pixelIndex]]
   # # append previous year's
   # treedFirePixelTableSinceLastDisp <- rbindlist(list(sim$treedFirePixelTableSinceLastDisp,
   #                                                    treedFirePixelTableSinceLastDisp))
@@ -310,8 +310,8 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
   }
 
   sim$lastFireYear <- time(sim)
-  ## TODO: Ceres potential bug fix. Move this from beggining to here.
-  sim$treedFirePixelTableSinceLastDisp[, pixelGroup := as.integer(getValues(sim$pixelGroupMap))[pixelIndex]]
+  ## TODO: Ceres potential bug fix. Move this from beginning to here.
+  sim$treedFirePixelTableSinceLastDisp[, pixelGroup := as.integer(as.vector(sim$pixelGroupMap[]))[pixelIndex]]
   # append previous year's
   treedFirePixelTableSinceLastDisp <- rbindlist(list(sim$treedFirePixelTableSinceLastDisp,
                                                      treedFirePixelTableSinceLastDisp))
