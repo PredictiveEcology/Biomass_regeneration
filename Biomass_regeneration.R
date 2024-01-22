@@ -18,6 +18,7 @@ defineModule(sim, list(
   timeframe = as.POSIXlt(c(NA, NA)),
   timeunit = "year",
   citation = list("citation.bib"),
+  loadOrder = list(after = "Biomass_core"),
   documentation = list("README.txt", "Biomass_regeneration.Rmd"),
   reqdPkgs = list("crayon", "data.table", "raster", "terra", ## TODO: update package list!
                   "PredictiveEcology/LandR@development (>= 1.1.0.9063)",
