@@ -25,7 +25,7 @@ defineModule(sim, list(
                   "PredictiveEcology/pemisc@development"),
   parameters = rbind(
     defineParameter("calibrate", "logical", FALSE, NA, NA, desc = "Do calibration? Defaults to FALSE"),
-    defineParameter("cohortDefinitionCols", "character", c("pixelGroup", "age", "speciesCode"), NA, NA,
+    defineParameter("cohortDefinitionCols", "character", c("pixelGroup", "speciesCode", "age", "ecoregionGroup", "B"), NA, NA,
                     desc = "columns in cohortData that determine unique cohorts"),
     defineParameter("fireInitialTime", "numeric", start(sim, "year") + 1, NA, NA,
                     desc = "The event time that the first fire disturbance event occurs"),
