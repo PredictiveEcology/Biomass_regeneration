@@ -81,13 +81,13 @@ defineModule(sim, list(
   outputObjects = bindrows(
     createsOutput("cohortData", "data.table",
                   desc = paste("age cohort-biomass table hooked to pixel group map",
-                               "by pixelGroupIndex at succession time step")),
+                               "by `pixelGroupIndex` at succession time step")),
     createsOutput("lastFireYear", "numeric",
                   desc = "Year of the most recent fire year"),
-    createsOutput("pixelGroupMap", "RasterLayer",
+    createsOutput("pixelGroupMap", "SpatRaster",
                   desc = "updated community map at each succession time step"),
     createsOutput("serotinyResproutSuccessPixels", "numeric",
-                  desc = "Pixels that were successfully regenerated via serotiny or resprouting. This is a subset of treedBurnLoci"),
+                  desc = "Pixels that were successfully regenerated via serotiny or resprouting. This is a subset of `treedBurnLoci`."),
     createsOutput("postFireRegenSummary", "data.table",
                   desc = "summary table of species post-fire regeneration"),
     createsOutput("severityBMap", "RasterLayer",
@@ -96,9 +96,9 @@ defineModule(sim, list(
                   desc = paste("A data.table of pixel fire severity, as in the amount of post-fire mortality (biomass loss).",
                                "May also have severity class used to calculate mortality.")),
     createsOutput("treedFirePixelTableSinceLastDisp", "data.table",
-                  desc = paste("3 columns: pixelIndex, pixelGroup, and burnTime.",
+                  desc = paste("3 columns: `pixelIndex`, `pixelGroup`, and `burnTime`.",
                                "Each row represents a forested pixel that was burned up to and including this year,",
-                               "since last dispersal event, with its corresponding pixelGroup and time it occurred"))
+                               "since last dispersal event, with its corresponding `pixelGroup` and time it occurred"))
   )
 ))
 
