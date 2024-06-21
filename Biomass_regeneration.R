@@ -103,7 +103,7 @@ defineModule(sim, list(
 ))
 
 ## event types
-#   - type `init` is required for initialiazation
+#   - type `init` is required for initialization
 
 doEvent.Biomass_regeneration <- function(sim, eventTime, eventType) {
   switch(
