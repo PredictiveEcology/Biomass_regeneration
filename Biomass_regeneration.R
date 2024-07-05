@@ -153,29 +153,28 @@ Init <- function(sim) {
 
 ## Fire disturbance regeneration event
 FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
-  # the presence of valid fire can cause three processes:
-  # 1. remove species cohorts from the pixels that have been affected.
-  # 2. initiate the post-fire regeneration
-  # 3. change of cohortdata and pixelgroup map
-  # may be a supplemenatary function is needed to convert non-logical map
-  # to a logical map
+  ## the presence of valid fire can cause three processes:
+  ## 1. remove species cohorts from the pixels that have been affected.
+  ## 2. initiate the post-fire regeneration
+  ## 3. change of cohortdata and pixelgroup map
+  ## maybe a supplementary function is needed to convert non-logical map to a logical map
   if (isTRUE(getOption("LandR.assertions"))) {
     if (!identical(NROW(sim$cohortData), NROW(unique(sim$cohortData, by = P(sim)$cohortDefinitionCols)))) {
-      stop("sim$cohortData has duplicated rows, i.e., multiple rows with the same pixelGroup, speciesCode and age")
+      stop("cohortData has duplicated rows, i.e., multiple rows with the same pixelGroup, speciesCode and age")
     }
   }
 
-  postFirePixelCohortData <- sim$cohortData[0,]
+  postFirePixelCohortData <- sim$cohortData[0, ]
   postFirePixelCohortData[, `:=`(pixelIndex = integer(),
                                  age = NULL, B = NULL, mortality = NULL,
                                  aNPPAct = NULL)]
 
-  # In some cases sumB exists, but not always -- we want to remove it too here.
+  ## In some cases sumB exists, but not always -- we want to remove it too here.
   if (isTRUE("sumB" %in% colnames(postFirePixelCohortData))) {
     set(postFirePixelCohortData, NULL, "sumB", NULL)
   }
 
-  if (P(sim)$calibrate & is.null(sim$postFireRegenSummary)) {  ## don't overwrite
+  if (P(sim)$calibrate && is.null(sim$postFireRegenSummary)) {  ## don't overwrite
     sim$postFireRegenSummary <- data.table(year = numeric(),
                                            regenMode = character(),
                                            species = character(),
@@ -206,8 +205,8 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
                burnTime = numeric(0))
   }
 
-  ## TODO: Ceres: maybe this should come at the end, lest we introduce pixelGroups that burned in previous years,
-  ## but aren't currently burning
+  ## TODO: Ceres: maybe this should come at the end, lest we introduce pixelGroups that burned
+  ## in previous years, but aren't currently burning
   # sim$treedFirePixelTableSinceLastDisp[, pixelGroup := as.integer(as.vector(sim$pixelGroupMap[]))[pixelIndex]]
   # # append previous year's
   # treedFirePixelTableSinceLastDisp <- rbindlist(list(sim$treedFirePixelTableSinceLastDisp,
@@ -219,7 +218,7 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
 
   ## select the pixels that have burned survivors and assess them
   burnedPixelTable <- treedFirePixelTableSinceLastDisp[pixelGroup %in% unique(burnedPixelCohortData$pixelGroup)]
-  ## expadn table to pixels
+  ## expand table to pixels
   burnedPixelCohortData <- burnedPixelTable[burnedPixelCohortData, allow.cartesian = TRUE,
                                             nomatch = 0, on = "pixelGroup"]
 
