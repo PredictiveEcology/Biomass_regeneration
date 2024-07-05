@@ -14,13 +14,12 @@ defineModule(sim, list(
   ),
   childModules = character(0),
   version = list(Biomass_regeneration = "1.0.0"),
-  spatialExtent = raster::extent(rep(NA_real_, 4)),
   timeframe = as.POSIXlt(c(NA, NA)),
   timeunit = "year",
   citation = list("citation.bib"),
   loadOrder = list(after = "Biomass_core"),
-  documentation = list("README.txt", "Biomass_regeneration.Rmd"),
-  reqdPkgs = list("crayon", "data.table", "raster", "terra", ## TODO: update package list!
+  documentation = list("README.md", "Biomass_regeneration.Rmd"),
+  reqdPkgs = list("crayon", "data.table", "terra", ## TODO: update package list!
                   "PredictiveEcology/LandR@development (>= 1.1.0.9063)",
                   "PredictiveEcology/pemisc@development"),
   parameters = rbind(
@@ -56,14 +55,18 @@ defineModule(sim, list(
                               `pixelGroupIndex` at succession time step")),
     expectsInput("inactivePixelIndex", "logical",
                  desc = "internal use. Keeps track of which pixels are inactive"),
-    expectsInput("pixelGroupMap", "RasterLayer",
+    expectsInput("pixelGroupMap", "SpatRaster",
                  desc = "updated community map at each succession time step"),
-    expectsInput("rasterToMatch", "RasterLayer",
+    expectsInput("rasterToMatch", "SpatRaster",
                  desc = "a raster of the `studyArea`."),
-    expectsInput("rstCurrentBurn", "RasterLayer",
+    expectsInput("rstCurrentBurn", "SpatRaster",
                  desc = "Binary raster of fires, 1 meaning 'burned', 0 or NA is non-burned"),
     expectsInput("species", "data.table",
-                 desc = "a table that has species traits such as longevity...",
+                 desc = paste("A table of invariant species traits with the following trait colums:",
+                              "'Name', 'Longevity', 'Sexual Maturity', 'Shade Tol.', 'Fire Tol.'",
+                              "'Seed Dispersal Dist Effective', 'Seed Dispersal Dist Maximum'",
+                              "'Vegetative Reprod Prob', 'Sprout Age Min', 'Sprout Age Max'",
+                              "'Post-Fire Regen'"),
                  sourceURL = "https://raw.githubusercontent.com/LANDIS-II-Foundation/Extensions-Succession/master/biomass-succession-archive/trunk/tests/v6.0-2.0/species.txt"),
     expectsInput("speciesEcoregion", "data.table",
                  desc = "table defining the maxANPP, maxB and SEP, which can change with both ecoregion and simulation time",
@@ -90,7 +93,7 @@ defineModule(sim, list(
                   desc = "Pixels that were successfully regenerated via serotiny or resprouting. This is a subset of `treedBurnLoci`."),
     createsOutput("postFireRegenSummary", "data.table",
                   desc = "summary table of species post-fire regeneration"),
-    createsOutput("severityBMap", "RasterLayer",
+    createsOutput("severityBMap", "SpatRaster",
                   desc = "A map of fire severity, as in the amount of post-fire mortality (biomass loss)"),
     createsOutput("severityData", "data.table",
                   desc = paste("A data.table of pixel fire severity, as in the amount of post-fire mortality (biomass loss).",
@@ -121,8 +124,10 @@ doEvent.Biomass_regeneration <- function(sim, eventTime, eventType) {
       if (!is.null(sim$rstCurrentBurn)) {
         sim <- FireDisturbance(sim)
       } else {
-        message(crayon::red(paste0("The Biomass_regeneration module is expecting sim$rstCurrentBurn;\n",
-                                   "Currently, it does not exist, so no regeneration will happen.")))
+        message(crayon::red(
+          paste0("The Biomass_regeneration module is expecting sim$rstCurrentBurn;\n",
+                 "Currently, it does not exist, so no regeneration will happen.")
+        ))
       }
       sim <- scheduleEvent(sim, time(sim) + P(sim)$fireTimestep,
                            "Biomass_regeneration", "fireDisturbance",
@@ -181,12 +186,6 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
                                            numberOfRegen = numeric(0))
   }
 
-  # if (!is.null(sim$rstCurrentBurn)) { # anything related to fire disturbance
-  #   if (extent(sim$rstCurrentBurn) != extent(pixelGroupMap)) {
-  #     sim$rstCurrentBurn <- raster::crop(sim$rstCurrentBurn, extent(pixelGroupMap))
-  #   }
-  # }
-
   ## extract burn pixel indices/groups and remove potentially inactive pixels
   burnedLoci <- which(as.vector(sim$rstCurrentBurn[]) > 0)
   treedBurnLoci <- if (length(sim$inactivePixelIndex) > 0) {
@@ -208,7 +207,7 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
   ## TODO: Ceres: maybe this should come at the end, lest we introduce pixelGroups that burned
   ## in previous years, but aren't currently burning
   # sim$treedFirePixelTableSinceLastDisp[, pixelGroup := as.integer(as.vector(sim$pixelGroupMap[]))[pixelIndex]]
-  # # append previous year's
+  ## append previous year's
   # treedFirePixelTableSinceLastDisp <- rbindlist(list(sim$treedFirePixelTableSinceLastDisp,
   #                                                    treedFirePixelTableSinceLastDisp))
 
