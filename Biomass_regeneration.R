@@ -165,7 +165,7 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
   }
 
   postFirePixelCohortData <- sim$cohortData[0, ]
-  postFirePixelCohortData[, `:=`(pixelIndex = integer(),
+  postFirePixelCohortData[, `:=`(pixelIndex = integer(0),
                                  age = NULL, B = NULL, mortality = NULL,
                                  aNPPAct = NULL)]
 
@@ -175,10 +175,10 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
   }
 
   if (P(sim)$calibrate && is.null(sim$postFireRegenSummary)) {  ## don't overwrite
-    sim$postFireRegenSummary <- data.table(year = numeric(),
-                                           regenMode = character(),
-                                           species = character(),
-                                           numberOfRegen = numeric())
+    sim$postFireRegenSummary <- data.table(year = numeric(0),
+                                           regenMode = character(0),
+                                           species = character(0),
+                                           numberOfRegen = numeric(0))
   }
 
   # if (!is.null(sim$rstCurrentBurn)) { # anything related to fire disturbance
@@ -255,8 +255,9 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
   postFirePixelCohortData <- serotinyOutputs$postFirePixelCohortData
   serotinyPixel <- serotinyOutputs$serotinyPixel
 
-  if (!is.null(serotinyOutputs$postFireRegenSummary))
+  if (!is.null(serotinyOutputs$postFireRegenSummary)) {
     sim$postFireRegenSummary <- serotinyOutputs$postFireRegenSummary
+  }
 
   rm(serotinyOutputs)
 
@@ -274,8 +275,10 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
 
   postFirePixelCohortData <- resproutingOutputs$postFirePixelCohortData
   sim$serotinyResproutSuccessPixels <- resproutingOutputs$serotinyResproutSuccessPixels
-  if (!is.null(resproutingOutputs$postFireRegenSummary))
+
+  if (!is.null(resproutingOutputs$postFireRegenSummary)) {
     sim$postFireRegenSummary <- resproutingOutputs$postFireRegenSummary
+  }
 
   rm(resproutingOutputs)
 
