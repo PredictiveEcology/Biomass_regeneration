@@ -20,7 +20,7 @@ defineModule(sim, list(
   loadOrder = list(after = "Biomass_core"),
   documentation = list("README.md", "Biomass_regeneration.Rmd"),
   reqdPkgs = list("crayon", "data.table", "terra", ## TODO: update package list!
-                  "PredictiveEcology/LandR@development (>= 1.1.5.9015)",
+                  "PredictiveEcology/LandR@development (>= 1.1.5.9016)",
                   "PredictiveEcology/pemisc@development"),
   parameters = rbind(
     defineParameter("calibrate", "logical", FALSE, NA, NA, desc = "Do calibration? Defaults to FALSE"),
