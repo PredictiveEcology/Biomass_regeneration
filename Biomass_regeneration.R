@@ -13,18 +13,18 @@ defineModule(sim, list(
     person(c("Alex", "M."), "Chubaty", email = "achubaty@for-cast.ca", role = "ctb")
   ),
   childModules = character(0),
-  version = list(Biomass_regeneration = "1.0.0"),
+  version = list(Biomass_regeneration = "1.0.0.9000"),
   timeframe = as.POSIXlt(c(NA, NA)),
   timeunit = "year",
   citation = list("citation.bib"),
   loadOrder = list(after = "Biomass_core"),
   documentation = list("README.md", "Biomass_regeneration.Rmd"),
   reqdPkgs = list("crayon", "data.table", "terra", ## TODO: update package list!
-                  "PredictiveEcology/LandR@development (>= 1.1.0.9063)",
+                  "PredictiveEcology/LandR@development (>= 1.1.5.9015)",
                   "PredictiveEcology/pemisc@development"),
   parameters = rbind(
     defineParameter("calibrate", "logical", FALSE, NA, NA, desc = "Do calibration? Defaults to FALSE"),
-    defineParameter("cohortDefinitionCols", "character", c("pixelGroup", "speciesCode", "age", "ecoregionGroup", "B"), NA, NA,
+    defineParameter("cohortDefinitionCols", "character", LandR::cohortDefinitionCols(), NA, NA,
                     desc = "columns in cohortData that determine unique cohorts"),
     defineParameter("fireInitialTime", "numeric", start(sim, "year") + 1, NA, NA,
                     desc = "The event time that the first fire disturbance event occurs"),
