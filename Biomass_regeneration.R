@@ -77,9 +77,11 @@ defineModule(sim, list(
                                     "Extensions-Succession/master/biomass-succession-archive/",
                                     "trunk/tests/v6.0-2.0/biomass-succession_test.txt")),
     expectsInput("treedFirePixelTableSinceLastDisp", "data.table",
-                 desc = paste("3 columns: pixelIndex, pixelGroup, and burnTime.",
-                              "Each row represents a forested pixel that was burned up to and including this year,",
-                              "since last dispersal event, with its corresponding pixelGroup and time it occurred"))
+                 desc = paste(
+                   "Each row represents a forested pixel that was burned up to and including this year,",
+                   "since last dispersal event, with its corresponding `pixelGroup` and time it occurred.",
+                   "With columns: `pixelIndex`, `pixelGroup`, and `burnTime`."
+                   ))
   ),
   outputObjects = bindrows(
     createsOutput("cohortData", "data.table",
@@ -99,9 +101,10 @@ defineModule(sim, list(
                   desc = paste("A data.table of pixel fire severity, as in the amount of post-fire mortality (biomass loss).",
                                "May also have severity class used to calculate mortality.")),
     createsOutput("treedFirePixelTableSinceLastDisp", "data.table",
-                  desc = paste("3 columns: `pixelIndex`, `pixelGroup`, and `burnTime`.",
-                               "Each row represents a forested pixel that was burned up to and including this year,",
-                               "since last dispersal event, with its corresponding `pixelGroup` and time it occurred"))
+                  desc = paste(
+                    "Each row represents a forested pixel that was burned up to and including this year,",
+                    "since last dispersal event, with its corresponding `pixelGroup` and time it occurred.",
+                    "with columns: `pixelIndex`, `pixelGroup`, and `burnTime`."))
   )
 ))
 
@@ -287,11 +290,11 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
     ## redo post-fire pixel groups by adding the maxPixelGroup to their ecoregioMap values
     if (!is.null(sim$serotinyResproutSuccessPixels)) {
 
-      # Add new cohorts to BOTH the sim$cohortData and sim$pixelGroupMap
+      ## Add new cohorts to BOTH the sim$cohortData and sim$pixelGroupMap
       ## reclassify pixel groups as burnt (0L)
-      if (verbose > 0)
+      if (verbose > 0) {
         message(blue("Post serotiny and resprouting"))
-
+      }
       outs <- updateCohortData(newPixelCohortData = postFirePixelCohortData,
                                cohortData = sim$cohortData,
                                pixelGroupMap = sim$pixelGroupMap,
@@ -360,9 +363,10 @@ FireDisturbance <- function(sim, verbose = getOption("LandR.verbose", TRUE)) {
                                                        dPath = dPath, cacheTags = cacheTags)
   }
 
-  if (!suppliedElsewhere('treedFirePixelTableSinceLastDisp', sim)) {
-    sim$treedFirePixelTableSinceLastDisp <- data.table(pixelIndex = integer(), pixelGroup = integer(),
-                                                       burnTime = numeric())
+  if (!suppliedElsewhere("treedFirePixelTableSinceLastDisp", sim)) {
+    sim$treedFirePixelTableSinceLastDisp <- data.table(
+      pixelIndex = integer(), pixelGroup = integer(), burnTime = numeric()
+    )
   }
 
   return(invisible(sim))
