@@ -115,6 +115,13 @@ doEvent.Biomass_regeneration <- function(sim, eventTime, eventType) {
   switch(
     eventType,
     init = {
+      ## No tree species in this study area (sppEquiv has no rows, established by fireSense_ELFs):
+      ## there are no cohorts to regenerate after fire, so schedule nothing.
+      if (is.data.frame(sim$sppEquiv) && nrow(sim$sppEquiv) == 0L) {
+        message("Biomass_regeneration: no tree species in this study area; no post-fire regeneration")
+        return(invisible(sim))
+      }
+
       # do stuff for this event
       sim <- Init(sim)
 
