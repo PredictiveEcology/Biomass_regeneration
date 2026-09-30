@@ -13,13 +13,13 @@ defineModule(sim, list(
     person(c("Alex", "M."), "Chubaty", email = "achubaty@for-cast.ca", role = "ctb")
   ),
   childModules = character(0),
-  version = list(Biomass_regeneration = "1.0.1"),
+  version = list(Biomass_regeneration = "1.0.1.9000"),
   timeframe = as.POSIXlt(c(NA, NA)),
   timeunit = "year",
   citation = list("citation.bib"),
   loadOrder = list(after = "Biomass_core"),
   documentation = list("README.md", "Biomass_regeneration.Rmd"),
-  reqdPkgs = list("crayon", "data.table", "terra", ## TODO: update package list!
+  reqdPkgs = list("crayon", "data.table", "reproducible", "terra", ## TODO: update package list!
                   "PredictiveEcology/LandR@development (>= 1.1.5.9016)",
                   "PredictiveEcology/pemisc@development"),
   parameters = rbind(

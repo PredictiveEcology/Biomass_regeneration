@@ -1,5 +1,9 @@
 Known issues: <https://github.com/PredictiveEcology/Biomass_regeneration/issues>
 
+# Biomass_regeneration (development version)
+
+* `reqdPkgs` now lists `reproducible`, whose `asPath()` the module calls.
+
 # Biomass_regeneration 1.0.1 (2026-06-02)
 
 * aligned cohort definitions with Biomass_core and LandR: added `loadOrder = list(after = "Biomass_core")` to metadata, and switched `cohortDefinitionCols` to `LandR::cohortDefinitionCols()` (first matching Biomass_core's "complete" set `pixelGroup`/`speciesCode`/`age`/`ecoregionGroup`/`B`), then adopting the newer LandR convention that no longer uses `ecoregionGroup` or `B` to define cohorts; requires `PredictiveEcology/LandR@development (>= 1.1.5.9016)`.
