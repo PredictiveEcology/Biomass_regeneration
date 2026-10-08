@@ -1,5 +1,7 @@
 Known issues: <https://github.com/PredictiveEcology/Biomass_regeneration/issues>
 
+# Biomass_regeneration (development version)
+
 # Biomass_regeneration 1.1.0
 
 This is a maintenance release. The module now defines cohorts the same way as Biomass_core and the LandR package, and runs after Biomass_core when both are in a project. It uses the project's input folder, following current module practice.

@@ -13,7 +13,7 @@ defineModule(sim, list(
     person(c("Alex", "M."), "Chubaty", email = "achubaty@for-cast.ca", role = "ctb")
   ),
   childModules = character(0),
-  version = list(Biomass_regeneration = "1.1.0"),
+  version = list(Biomass_regeneration = "1.1.0.9000"),
   timeframe = as.POSIXlt(c(NA, NA)),
   timeunit = "year",
   citation = list("citation.bib"),
