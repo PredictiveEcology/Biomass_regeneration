@@ -21,11 +21,11 @@ name: Render module Rmd
 on:
   pull_request:
     branches:
-      - master
+      - main
       - development
   push:
     branches:
-      - master
+      - main
       - development
     paths:
       - .github/workflows/render-module-rmd.yaml
