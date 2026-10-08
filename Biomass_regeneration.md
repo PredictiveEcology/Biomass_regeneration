@@ -1,17 +1,35 @@
 ---
-title: "Biomass_regeneration"
-author: "Eliot McIntire, Alex M Chubaty, Ceres Barros"
-date: "11 May 2021"
+title: "LandR _Biomass_regeneration_ Manual"
+subtitle: "v.1.1.0"
+date: "Last updated: 2026-10-08"
 output:
-  html_document:
+  bookdown::html_document2:
+    toc: true
+    toc_float: true
+    theme: sandstone
+    number_sections: false
+    df_print: paged
     keep_md: yes
 editor_options:
   chunk_output_type: console
+  bibliography: citations/references_Biomass_regeneration.bib
+link-citations: true
+always_allow_html: true
 ---
 
+<!-- the following are text references used in captions for LaTeX compatibility -->
+(ref:Biomass-regeneration) *Biomass_regeneration*
 
 
-# Overview
+
+#### Authors:
+
+Eliot J B McIntire <eliot.mcintire@nrcan-rncan.gc.ca> [aut, cre], Yong Luo <yluo1@lakeheadu.ca> [aut], Ceres Barros <cbarros@mail.ubc.ca> [aut], Alex M. Chubaty <achubaty@for-cast.ca> [ctb]
+<!-- ideally separate authors with new lines, '\n' not working -->
+
+## Module Overview
+
+### Module summary
 
 Biomass_regeneration is a SpaDES module that simulates post-disturbance regeneration mechanisms for Biomass_core.
 As such, this module is mostly based on the post-disturbance regeneration mechanisms present in LANDIS-II Biomass Succession v3.2.1 extension (see [LANDIS-II Biomass Succession v3.2 User Guide](https://github.com/LANDIS-II-Foundation/Extension-Biomass-Succession/blob/master/docs/LANDIS-II%20Biomass%20Succession%20v3.2%20User%20Guide.docx) and [Scheller and Mladenoff (2004)](https://pdfs.semanticscholar.org/4d38/d0be6b292eccd444af399775d37a757d1967.pdf).
@@ -37,103 +55,260 @@ According to the manual:
 This is no longer the case in Biomass_regeneration, where both serotinity and resprouting can occur in the same pixel, although not for the same species.
 We feel that this is more realistic ecologically, as resprouters will typically regenerate faster  after a fire, often shading serotinous species and creating interesting successional feedbacks (e.g. light-loving serotinous species having to "wait" for canopy gaps to germinate).
 
-## General flow of Biomass_regeneration processes - fire disturbances only
+### General flow of Biomass_regeneration processes - fire disturbances only
 
 1. Removal of biomass in disturbed, i.e. burnt, pixels
 2. Activation of serotiny for serotinous species present before the fire
 3. Activation of resprouting for resprouter species present before the fire and for which serotiny was not activated
 4. Establishment/growth of species for which serotiny or resprouting were activated
 
-# Usage
+### Module inputs and parameters
 
+Table \@ref(tab:moduleInputs-Biomass-regeneration) shows the full list of module inputs.
 
-```r
-library(SpaDES)
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<caption>(\#tab:moduleInputs-Biomass-regeneration)(\#tab:moduleInputs-Biomass-regeneration)List of (ref:Biomass-regeneration) input objects and their description.</caption>
+ <thead>
+  <tr>
+   <th style="text-align:left;"> objectName </th>
+   <th style="text-align:left;"> objectClass </th>
+   <th style="text-align:left;"> desc </th>
+   <th style="text-align:left;"> sourceURL </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:left;"> cohortData </td>
+   <td style="text-align:left;"> data.table </td>
+   <td style="text-align:left;"> age cohort-biomass table hooked to pixel group map by `pixelGroupIndex` at succession time step </td>
+   <td style="text-align:left;"> NA </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> inactivePixelIndex </td>
+   <td style="text-align:left;"> logical </td>
+   <td style="text-align:left;"> internal use. Keeps track of which pixels are inactive </td>
+   <td style="text-align:left;"> NA </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> pixelGroupMap </td>
+   <td style="text-align:left;"> SpatRaster </td>
+   <td style="text-align:left;"> updated community map at each succession time step </td>
+   <td style="text-align:left;"> NA </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> rasterToMatch </td>
+   <td style="text-align:left;"> SpatRaster </td>
+   <td style="text-align:left;"> a raster of the `studyArea`. </td>
+   <td style="text-align:left;"> NA </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> rstCurrentBurn </td>
+   <td style="text-align:left;"> SpatRaster </td>
+   <td style="text-align:left;"> Binary raster of fires, 1 meaning 'burned', 0 or NA is non-burned </td>
+   <td style="text-align:left;"> NA </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> species </td>
+   <td style="text-align:left;"> data.table </td>
+   <td style="text-align:left;"> A table of invariant species traits with the following trait colums: 'Name', 'Longevity', 'Sexual Maturity', 'Shade Tol.', 'Fire Tol.' 'Seed Dispersal Dist Effective', 'Seed Dispersal Dist Maximum' 'Vegetative Reprod Prob', 'Sprout Age Min', 'Sprout Age Max' 'Post-Fire Regen' </td>
+   <td style="text-align:left;"> https://raw.githubusercontent.com/LANDIS-II-Foundation/Extensions-Succession/master/biomass-succession-archive/trunk/tests/v6.0-2.0/species.txt </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> speciesEcoregion </td>
+   <td style="text-align:left;"> data.table </td>
+   <td style="text-align:left;"> table defining the maxANPP, maxB and SEP, which can change with both ecoregion and simulation time </td>
+   <td style="text-align:left;"> https://raw.githubusercontent.com/LANDIS-II-Foundation/Extensions-Succession/master/biomass-succession-archive/trunk/tests/v6.0-2.0/biomass-succession-dynamic-inputs_test.txt </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> sufficientLight </td>
+   <td style="text-align:left;"> data.frame </td>
+   <td style="text-align:left;"> table defining how the species with different shade tolerance respond to stand shadiness </td>
+   <td style="text-align:left;"> https://raw.githubusercontent.com/LANDIS-II-Foundation/Extensions-Succession/master/biomass-succession-archive/trunk/tests/v6.0-2.0/biomass-succession_test.txt </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> treedFirePixelTableSinceLastDisp </td>
+   <td style="text-align:left;"> data.table </td>
+   <td style="text-align:left;"> Each row represents a forested pixel that was burned up to and including this year, since last dispersal event, with its corresponding `pixelGroup` and time it occurred. With columns: `pixelIndex`, `pixelGroup`, and `burnTime`. </td>
+   <td style="text-align:left;"> NA </td>
+  </tr>
+</tbody>
+</table>
 
-setPaths()
-getPaths() # shows where the 4 relevant paths are
+Summary of user-visible parameters (Table \@ref(tab:moduleParams-Biomass-regeneration)):
 
-times <- list(start = 0, end = 10)
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<caption>(\#tab:moduleParams-Biomass-regeneration)(\#tab:moduleParams-Biomass-regeneration)List of (ref:Biomass-regeneration) parameters and their description.</caption>
+ <thead>
+  <tr>
+   <th style="text-align:left;"> paramName </th>
+   <th style="text-align:left;"> paramClass </th>
+   <th style="text-align:left;"> default </th>
+   <th style="text-align:left;"> min </th>
+   <th style="text-align:left;"> max </th>
+   <th style="text-align:left;"> paramDesc </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:left;"> calibrate </td>
+   <td style="text-align:left;"> logical </td>
+   <td style="text-align:left;"> FALSE </td>
+   <td style="text-align:left;"> NA </td>
+   <td style="text-align:left;"> NA </td>
+   <td style="text-align:left;"> Do calibration? Defaults to FALSE </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> cohortDefinitionCols </td>
+   <td style="text-align:left;"> character </td>
+   <td style="text-align:left;"> pixelGro.... </td>
+   <td style="text-align:left;"> NA </td>
+   <td style="text-align:left;"> NA </td>
+   <td style="text-align:left;"> columns in cohortData that determine unique cohorts </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> fireInitialTime </td>
+   <td style="text-align:left;"> numeric </td>
+   <td style="text-align:left;"> 1 </td>
+   <td style="text-align:left;"> NA </td>
+   <td style="text-align:left;"> NA </td>
+   <td style="text-align:left;"> The event time that the first fire disturbance event occurs </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> fireTimestep </td>
+   <td style="text-align:left;"> numeric </td>
+   <td style="text-align:left;"> 1 </td>
+   <td style="text-align:left;"> NA </td>
+   <td style="text-align:left;"> NA </td>
+   <td style="text-align:left;"> The number of time units between successive fire events in a fire module </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> initialB </td>
+   <td style="text-align:left;"> numeric </td>
+   <td style="text-align:left;"> 10 </td>
+   <td style="text-align:left;"> 1 </td>
+   <td style="text-align:left;"> NA </td>
+   <td style="text-align:left;"> initial biomass values of new age-1 cohorts. If `NA` or `NULL`, initial biomass will be calculated as in LANDIS-II Biomass Suc. Extension (see Scheller and Miranda, 2015 or `?LandR::.initiateNewCohorts`) </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> successionTimestep </td>
+   <td style="text-align:left;"> numeric </td>
+   <td style="text-align:left;"> 10 </td>
+   <td style="text-align:left;"> NA </td>
+   <td style="text-align:left;"> NA </td>
+   <td style="text-align:left;"> defines the simulation time step, default is 10 years </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> .plots </td>
+   <td style="text-align:left;"> character </td>
+   <td style="text-align:left;"> screen </td>
+   <td style="text-align:left;"> NA </td>
+   <td style="text-align:left;"> NA </td>
+   <td style="text-align:left;"> Used by Plots function, which can be optionally used here </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> .plotInitialTime </td>
+   <td style="text-align:left;"> numeric </td>
+   <td style="text-align:left;"> 0 </td>
+   <td style="text-align:left;"> NA </td>
+   <td style="text-align:left;"> NA </td>
+   <td style="text-align:left;"> This describes the simulation time at which the first plot event should occur </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> .plotInterval </td>
+   <td style="text-align:left;"> numeric </td>
+   <td style="text-align:left;"> NA </td>
+   <td style="text-align:left;"> NA </td>
+   <td style="text-align:left;"> NA </td>
+   <td style="text-align:left;"> This describes the simulation time interval between plot events </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> .saveInitialTime </td>
+   <td style="text-align:left;"> numeric </td>
+   <td style="text-align:left;"> NA </td>
+   <td style="text-align:left;"> NA </td>
+   <td style="text-align:left;"> NA </td>
+   <td style="text-align:left;"> This describes the simulation time at which the first save event should occur </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> .saveInterval </td>
+   <td style="text-align:left;"> numeric </td>
+   <td style="text-align:left;"> NA </td>
+   <td style="text-align:left;"> NA </td>
+   <td style="text-align:left;"> NA </td>
+   <td style="text-align:left;"> This describes the simulation time interval between save events </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> .useCache </td>
+   <td style="text-align:left;"> character </td>
+   <td style="text-align:left;"> .inputOb.... </td>
+   <td style="text-align:left;"> NA </td>
+   <td style="text-align:left;"> NA </td>
+   <td style="text-align:left;"> Should this entire module be run with caching activated? This is generally intended for data-type modules, where stochasticity and time are not relevant </td>
+  </tr>
+</tbody>
+</table>
 
-parameters <- list(
-  #.progress = list(type = "text", interval = 1), # for a progress bar
-  ## If there are further modules, each can have its own set of parameters:
-  #module1 = list(param1 = value1, param2 = value2),
-  #module2 = list(param1 = value1, param2 = value2)
-)
-modules <- list("Biomass_regeneration")
-objects <- list()
-inputs <- list()
-outputs <- list()
+### Module outputs
 
-mySim <- simInit(times = times, params = parameters, modules = modules,
-                 objects = objects)
+Description of the module outputs (Table \@ref(tab:moduleOutputs-Biomass-regeneration)).
 
-mySimOut <- spades(mySim)
-```
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<caption>(\#tab:moduleOutputs-Biomass-regeneration)(\#tab:moduleOutputs-Biomass-regeneration)List of (ref:Biomass-regeneration) outputs and their description.</caption>
+ <thead>
+  <tr>
+   <th style="text-align:left;"> objectName </th>
+   <th style="text-align:left;"> objectClass </th>
+   <th style="text-align:left;"> desc </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:left;"> cohortData </td>
+   <td style="text-align:left;"> data.table </td>
+   <td style="text-align:left;"> age cohort-biomass table hooked to pixel group map by `pixelGroupIndex` at succession time step </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> lastFireYear </td>
+   <td style="text-align:left;"> numeric </td>
+   <td style="text-align:left;"> Year of the most recent fire year </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> pixelGroupMap </td>
+   <td style="text-align:left;"> SpatRaster </td>
+   <td style="text-align:left;"> updated community map at each succession time step </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> serotinyResproutSuccessPixels </td>
+   <td style="text-align:left;"> numeric </td>
+   <td style="text-align:left;"> Pixels that were successfully regenerated via serotiny or resprouting. This is a subset of `treedBurnLoci`. </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> postFireRegenSummary </td>
+   <td style="text-align:left;"> data.table </td>
+   <td style="text-align:left;"> summary table of species post-fire regeneration </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> severityBMap </td>
+   <td style="text-align:left;"> SpatRaster </td>
+   <td style="text-align:left;"> A map of fire severity, as in the amount of post-fire mortality (biomass loss) </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> severityData </td>
+   <td style="text-align:left;"> data.table </td>
+   <td style="text-align:left;"> A data.table of pixel fire severity, as in the amount of post-fire mortality (biomass loss). May also have severity class used to calculate mortality. </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> treedFirePixelTableSinceLastDisp </td>
+   <td style="text-align:left;"> data.table </td>
+   <td style="text-align:left;"> Each row represents a forested pixel that was burned up to and including this year, since last dispersal event, with its corresponding `pixelGroup` and time it occurred. with columns: `pixelIndex`, `pixelGroup`, and `burnTime`. </td>
+  </tr>
+</tbody>
+</table>
 
-# Parameters
-
-Provide a summary of user-visible parameters.
-
-
-|paramName            |paramClass |default      |min |max |paramDesc                                                                                                                                                                                                   |
-|:--------------------|:----------|:------------|:---|:---|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|calibrate            |logical    |FALSE        |NA  |NA  |Do calibration? Defaults to FALSE                                                                                                                                                                           |
-|cohortDefinitionCols |character  |pixelGro.... |NA  |NA  |columns in cohortData that determine unique cohorts                                                                                                                                                         |
-|fireInitialTime      |numeric    |1            |NA  |NA  |The event time that the first fire disturbance event occurs                                                                                                                                                 |
-|fireTimestep         |numeric    |1            |NA  |NA  |The number of time units between successive fire events in a fire module                                                                                                                                    |
-|initialB             |numeric    |10           |1   |NA  |initial biomass values of new age-1 cohorts. If `NA` or `NULL`, initial biomass will be calculated as in LANDIS-II Biomass Suc. Extension (see Scheller and Miranda, 2015 or `?LandR::.initiateNewCohorts`) |
-|successionTimestep   |numeric    |10           |NA  |NA  |defines the simulation time step, default is 10 years                                                                                                                                                       |
-|.plots               |character  |screen       |NA  |NA  |Used by Plots function, which can be optionally used here                                                                                                                                                   |
-|.plotInitialTime     |numeric    |0            |NA  |NA  |This describes the simulation time at which the first plot event should occur                                                                                                                               |
-|.plotInterval        |numeric    |NA           |NA  |NA  |This describes the simulation time interval between plot events                                                                                                                                             |
-|.saveInitialTime     |numeric    |NA           |NA  |NA  |This describes the simulation time at which the first save event should occur                                                                                                                               |
-|.saveInterval        |numeric    |NA           |NA  |NA  |This describes the simulation time interval between save events                                                                                                                                             |
-|.useCache            |character  |.inputOb.... |NA  |NA  |Should this entire module be run with caching activated? This is generally intended for data-type modules, where stochasticity and time are not relevant                                                    |
-
-# Events
-
-Describe what happens for each event type.
-
-# Data dependencies
-
-## Input data
-
-
-|objectName                       |objectClass |desc                                                                                                                                                                                                                    |sourceURL                                                                                                                                                                      |
-|:--------------------------------|:-----------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|cohortData                       |data.table  |age cohort-biomass table hooked to pixel group map by `pixelGroupIndex` at succession time step                                                                                                                         |NA                                                                                                                                                                             |
-|inactivePixelIndex               |logical     |internal use. Keeps track of which pixels are inactive                                                                                                                                                                  |NA                                                                                                                                                                             |
-|pixelGroupMap                    |RasterLayer |updated community map at each succession time step                                                                                                                                                                      |NA                                                                                                                                                                             |
-|rasterToMatch                    |RasterLayer |a raster of the `studyArea`.                                                                                                                                                                                            |NA                                                                                                                                                                             |
-|rstCurrentBurn                   |RasterLayer |Binary raster of fires, 1 meaning 'burned', 0 or NA is non-burned                                                                                                                                                       |NA                                                                                                                                                                             |
-|species                          |data.table  |a table that has species traits such as longevity...                                                                                                                                                                    |https://raw.githubusercontent.com/LANDIS-II-Foundation/Extensions-Succession/master/biomass-succession-archive/trunk/tests/v6.0-2.0/species.txt                                |
-|speciesEcoregion                 |data.table  |table defining the maxANPP, maxB and SEP, which can change with both ecoregion and simulation time                                                                                                                      |https://raw.githubusercontent.com/LANDIS-II-Foundation/Extensions-Succession/master/biomass-succession-archive/trunk/tests/v6.0-2.0/biomass-succession-dynamic-inputs_test.txt |
-|sufficientLight                  |data.frame  |table defining how the species with different shade tolerance respond to stand shadiness                                                                                                                                |https://raw.githubusercontent.com/LANDIS-II-Foundation/Extensions-Succession/master/biomass-succession-archive/trunk/tests/v6.0-2.0/biomass-succession_test.txt                |
-|treedFirePixelTableSinceLastDisp |data.table  |3 columns: pixelIndex, pixelGroup, and burnTime. Each row represents a forested pixel that was burned up to and including this year, since last dispersal event, with its corresponding pixelGroup and time it occurred |NA                                                                                                                                                                             |
-
-## Output data
-
-Description of the module outputs.
-
-
-|objectName                       |objectClass |desc                                                                                                                                                                                                                    |
-|:--------------------------------|:-----------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|cohortData                       |data.table  |age cohort-biomass table hooked to pixel group map by pixelGroupIndex at succession time step                                                                                                                           |
-|lastFireYear                     |numeric     |Year of the most recent fire year                                                                                                                                                                                       |
-|pixelGroupMap                    |RasterLayer |updated community map at each succession time step                                                                                                                                                                      |
-|serotinyResproutSuccessPixels    |numeric     |Pixels that were successfully regenerated via serotiny or resprouting. This is a subset of treedBurnLoci                                                                                                                |
-|postFireRegenSummary             |data.table  |summary table of species post-fire regeneration                                                                                                                                                                         |
-|severityBMap                     |RasterLayer |A map of fire severity, as in the amount of post-fire mortality (biomass loss)                                                                                                                                          |
-|severityData                     |data.table  |A data.table of pixel fire severity, as in the amount of post-fire mortality (biomass loss). May also have severity class used to calculate mortality.                                                                  |
-|treedFirePixelTableSinceLastDisp |data.table  |3 columns: pixelIndex, pixelGroup, and burnTime. Each row represents a forested pixel that was burned up to and including this year, since last dispersal event, with its corresponding pixelGroup and time it occurred |
-
-# Links to other modules
+### Links to other modules
 
 Primarily used with the LandR Biomass suite of modules, namely [Biomass_core](https://github.com/PredictiveEcology/Biomass_core).
 
 ## Getting help
 
 - <https://gitter.im/PredictiveEcology/LandR_Biomass>
-

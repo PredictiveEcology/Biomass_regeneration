@@ -13,13 +13,13 @@ defineModule(sim, list(
     person(c("Alex", "M."), "Chubaty", email = "achubaty@for-cast.ca", role = "ctb")
   ),
   childModules = character(0),
-  version = list(Biomass_regeneration = "1.0.0.9000"),
+  version = list(Biomass_regeneration = "1.1.0"),
   timeframe = as.POSIXlt(c(NA, NA)),
   timeunit = "year",
   citation = list("citation.bib"),
   loadOrder = list(after = "Biomass_core"),
   documentation = list("README.md", "Biomass_regeneration.Rmd"),
-  reqdPkgs = list("crayon", "data.table", "terra", ## TODO: update package list!
+  reqdPkgs = list("crayon", "data.table", "reproducible", "terra", ## TODO: update package list!
                   "PredictiveEcology/LandR@development (>= 1.1.5.9016)",
                   "PredictiveEcology/pemisc@development"),
   parameters = rbind(
@@ -50,16 +50,16 @@ defineModule(sim, list(
                                  "This is generally intended for data-type modules, where stochasticity and time are not relevant"))
   ),
   inputObjects = bindrows(
-    expectsInput("cohortData", "data.table",
+    expectsInput("cohortData", "data.table",                                    # nolint: in_no_default
                  desc = paste("age cohort-biomass table hooked to pixel group map by
                               `pixelGroupIndex` at succession time step")),
-    expectsInput("inactivePixelIndex", "logical",
+    expectsInput("inactivePixelIndex", "logical",                               # nolint: in_no_default
                  desc = "internal use. Keeps track of which pixels are inactive"),
-    expectsInput("pixelGroupMap", "SpatRaster",
+    expectsInput("pixelGroupMap", "SpatRaster",                                 # nolint: in_no_default
                  desc = "updated community map at each succession time step"),
-    expectsInput("rasterToMatch", "SpatRaster",
+    expectsInput("rasterToMatch", "SpatRaster",                                 # nolint: in_no_default
                  desc = "a raster of the `studyArea`."),
-    expectsInput("rstCurrentBurn", "SpatRaster",
+    expectsInput("rstCurrentBurn", "SpatRaster",                                # nolint: in_no_default
                  desc = "Binary raster of fires, 1 meaning 'burned', 0 or NA is non-burned"),
     expectsInput("species", "data.table",
                  desc = paste("A table of invariant species traits with the following trait colums:",
@@ -115,6 +115,13 @@ doEvent.Biomass_regeneration <- function(sim, eventTime, eventType) {
   switch(
     eventType,
     init = {
+      ## No tree species in this study area (sppEquiv has no rows, established by fireSense_ELFs):
+      ## there are no cohorts to regenerate after fire, so schedule nothing.
+      if (is.data.frame(sim$sppEquiv) && nrow(sim$sppEquiv) == 0L) {
+        message("Biomass_regeneration: no tree species in this study area; no post-fire regeneration")
+        return(invisible(sim))
+      }
+
       # do stuff for this event
       sim <- Init(sim)
 
