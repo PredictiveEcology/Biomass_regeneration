@@ -19,7 +19,7 @@ defineModule(sim, list(
   citation = list("citation.bib"),
   loadOrder = list(after = "Biomass_core"),
   documentation = list("README.md", "Biomass_regeneration.Rmd"),
-  reqdPkgs = list("crayon", "data.table", "reproducible", "terra", ## TODO: update package list!
+  reqdPkgs = list("crayon", "data.table", "reproducible", "SpaDES.core (>= 2.1.0)", "terra", ## TODO: update package list!
                   "PredictiveEcology/LandR@development (>= 1.1.5.9016)",
                   "PredictiveEcology/pemisc@development"),
   parameters = rbind(
