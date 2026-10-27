@@ -12,7 +12,8 @@ output:
     keep_md: yes
 editor_options:
   chunk_output_type: console
-  bibliography: citations/references_Biomass_regeneration.bib
+bibliography: citations/references_Biomass_regeneration.bib
+citation-style: citations/ecology-letters.csl
 link-citations: true
 always_allow_html: true
 ---
@@ -42,10 +43,10 @@ download.file(url = "https://img.shields.io/badge/Made%20with-Markdown-1f425f.pn
 
 ## Module Overview
 
-### Module summary
+### Module summary {#bregen-summary}
 
 Biomass_regeneration is a SpaDES module that simulates post-disturbance regeneration mechanisms for Biomass_core.
-As such, this module is mostly based on the post-disturbance regeneration mechanisms present in LANDIS-II Biomass Succession v3.2.1 extension (see [LANDIS-II Biomass Succession v3.2 User Guide](https://github.com/LANDIS-II-Foundation/Extension-Biomass-Succession/blob/master/docs/LANDIS-II%20Biomass%20Succession%20v3.2%20User%20Guide.docx) and [Scheller and Mladenoff (2004)](https://pdfs.semanticscholar.org/4d38/d0be6b292eccd444af399775d37a757d1967.pdf).
+As such, this module is mostly based on the post-disturbance regeneration mechanisms present in LANDIS-II Biomass Succession v3.2.1 extension (see [LANDIS-II Biomass Succession v3.2 User Guide](https://github.com/LANDIS-II-Foundation/Extension-Biomass-Succession/blob/master/docs/LANDIS-II%20Biomass%20Succession%20v3.2%20User%20Guide.docx) [@SchellerMiranda2015] and @SchellerMladenoff2004).
 At the moment, the Biomass_regeneration module only simulates post-fire disturbance effects on forest species, by simulating post-fire mortality and activating serotiny or resprouting mechanisms for each species, depending on their traits (i.e. ability to resprout and/or germinate from seeds, serotiny, following fire).
 Post-fire mortality behaves in a stand-replacing fashion, i.e. should a pixel be within a fire perimeter (determined by a fire raster) all cohorts see their biomasses set to 0.
 
@@ -68,14 +69,14 @@ According to the manual:
 This is no longer the case in Biomass_regeneration, where both serotinity and resprouting can occur in the same pixel, although not for the same species.
 We feel that this is more realistic ecologically, as resprouters will typically regenerate faster  after a fire, often shading serotinous species and creating interesting successional feedbacks (e.g. light-loving serotinous species having to "wait" for canopy gaps to germinate).
 
-### General flow of Biomass_regeneration processes - fire disturbances only
+### General flow of Biomass_regeneration processes - fire disturbances only {#bregen-general-flow}
 
 1. Removal of biomass in disturbed, i.e. burnt, pixels
 2. Activation of serotiny for serotinous species present before the fire
 3. Activation of resprouting for resprouter species present before the fire and for which serotiny was not activated
 4. Establishment/growth of species for which serotiny or resprouting were activated
 
-### Module inputs and parameters
+### Module inputs and parameters {#bregen-inputs-params}
 
 Table \@ref(tab:moduleInputs-Biomass-regeneration) shows the full list of module inputs.
 
@@ -94,7 +95,7 @@ knitr::kable(df_params, caption = "List of (ref:Biomass-regeneration) parameters
   kableExtra::kable_styling(latex_options = "scale_down", full_width = TRUE)
 ```
 
-### Module outputs
+### Module outputs {#bregen-outputs}
 
 Description of the module outputs (Table \@ref(tab:moduleOutputs-Biomass-regeneration)).
 
@@ -104,10 +105,57 @@ knitr::kable(df_outputs, caption = "List of (ref:Biomass-regeneration) outputs a
   kableExtra::kable_styling(latex_options = "scale_down", full_width = TRUE)
 ```
 
-### Links to other modules
+#### Fire severity {#bregen-severity}
+
+Each time a fire occurs, the module also records how much biomass was lost in each burnt pixel, before any post-fire regeneration is added.
+`severityData` is a `data.table` with one row per burnt pixel that had cohorts before the fire, with columns `pixelGroup`, `pixelIndex`, `severityB` (the biomass lost, in g/m^2^) and `severityPropB` (the proportion of the pre-fire biomass that was lost).
+`severityBMap` is a map of `severityB`, with the same extent and resolution as `rasterToMatch`, and `NA` in pixels that did not burn or had no cohorts.
+Because post-fire mortality is stand-replacing, `severityB` is the pixel's total pre-fire biomass and `severityPropB` is 1.
+Both objects are calculated with `LandR::calcSeverityB()` and are overwritten at each fire event.
+
+### Simulation flow and module events {#bregen-sim-flow}
+
+*Biomass_regeneration* has two events:
+
+1.  `init` -- checks that `fireInitialTime` and `fireTimestep` are defined, and warns if `initialB` differs from the value used by other modules (e.g. *Biomass_core*).
+    It then schedules the first `fireDisturbance` event at `fireInitialTime`.
+    If the study area has no tree species (i.e. `sppEquiv` has no rows), nothing is scheduled.
+
+2.  `fireDisturbance` -- runs every `fireTimestep` years.
+    If `rstCurrentBurn` exists, it removes the biomass in burnt pixels, calculates fire severity, activates serotiny and resprouting and adds the new cohorts to `cohortData` and `pixelGroupMap` (see [General flow](#bregen-general-flow)).
+    If `rstCurrentBurn` does not exist, it only prints a message and no regeneration happens.
+
+`rstCurrentBurn` must be produced by a fire module (e.g. *LandMine*, *scfm* or *fireSense*).
+The `fireInitialTime` and `fireTimestep` parameters should match the fire module's first fire year and fire frequency.
+`fireDisturbance` events have priority 3, so the fire module's burn event needs a lower priority value (e.g. *LandMine* uses 2.5) to create `rstCurrentBurn` before regeneration happens in the same year.
+
+### Links to other modules {#bregen-links-modules}
 
 Primarily used with the LandR Biomass suite of modules, namely [Biomass_core](https://github.com/PredictiveEcology/Biomass_core).
 
-## Getting help
+## Usage example {#bregen-example}
 
-- <https://gitter.im/PredictiveEcology/LandR_Biomass>
+*Biomass_regeneration* needs `rstCurrentBurn` from a fire module.
+In this example, *LandMine* simulates fires and the LandR data modules prepare the inputs of *Biomass_core*, for a study area provided by the user:
+
+```{r usage-Biomass-regeneration, eval = FALSE}
+out <- SpaDES.project::setupProject(
+  modules = c("PredictiveEcology/Biomass_speciesData@development",
+              "PredictiveEcology/Biomass_borealDataPrep@development",
+              "PredictiveEcology/Biomass_core@development",
+              "PredictiveEcology/LandMine@development",
+              "PredictiveEcology/Biomass_regeneration@development"),
+  times = list(start = 2011, end = 2031),
+  studyArea = studyArea  # an sf polygon
+)
+sim <- SpaDES.core::simInitAndSpades2(out)
+
+## fire severity of the last fire year
+terra::plot(sim$severityBMap)
+```
+
+## Getting help {#bregen-help}
+
+- <https://github.com/PredictiveEcology/Biomass_regeneration/issues>
+
+## References {#bregen-refs}
