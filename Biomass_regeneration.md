@@ -1,7 +1,7 @@
 ---
 title: "LandR _Biomass_regeneration_ Manual"
-subtitle: "v.1.1.0.9000"
-date: "Last updated: 2026-10-14"
+subtitle: "v.1.1.0.9001"
+date: "Last updated: 2026-11-05"
 output:
   bookdown::html_document2:
     toc: true
@@ -146,6 +146,7 @@ Summary of user-visible parameters (Table \@ref(tab:moduleParams-Biomass-regener
    <th style="text-align:left;"> min </th>
    <th style="text-align:left;"> max </th>
    <th style="text-align:left;"> paramDesc </th>
+   <th style="text-align:left;"> cacheKey </th>
   </tr>
  </thead>
 <tbody>
@@ -156,6 +157,7 @@ Summary of user-visible parameters (Table \@ref(tab:moduleParams-Biomass-regener
    <td style="text-align:left;"> NA </td>
    <td style="text-align:left;"> NA </td>
    <td style="text-align:left;"> Do calibration? Defaults to FALSE </td>
+   <td style="text-align:left;"> TRUE </td>
   </tr>
   <tr>
    <td style="text-align:left;"> cohortDefinitionCols </td>
@@ -164,6 +166,7 @@ Summary of user-visible parameters (Table \@ref(tab:moduleParams-Biomass-regener
    <td style="text-align:left;"> NA </td>
    <td style="text-align:left;"> NA </td>
    <td style="text-align:left;"> columns in cohortData that determine unique cohorts </td>
+   <td style="text-align:left;"> TRUE </td>
   </tr>
   <tr>
    <td style="text-align:left;"> fireInitialTime </td>
@@ -172,6 +175,7 @@ Summary of user-visible parameters (Table \@ref(tab:moduleParams-Biomass-regener
    <td style="text-align:left;"> NA </td>
    <td style="text-align:left;"> NA </td>
    <td style="text-align:left;"> The event time that the first fire disturbance event occurs </td>
+   <td style="text-align:left;"> TRUE </td>
   </tr>
   <tr>
    <td style="text-align:left;"> fireTimestep </td>
@@ -180,6 +184,7 @@ Summary of user-visible parameters (Table \@ref(tab:moduleParams-Biomass-regener
    <td style="text-align:left;"> NA </td>
    <td style="text-align:left;"> NA </td>
    <td style="text-align:left;"> The number of time units between successive fire events in a fire module </td>
+   <td style="text-align:left;"> TRUE </td>
   </tr>
   <tr>
    <td style="text-align:left;"> initialB </td>
@@ -188,6 +193,7 @@ Summary of user-visible parameters (Table \@ref(tab:moduleParams-Biomass-regener
    <td style="text-align:left;"> 1 </td>
    <td style="text-align:left;"> NA </td>
    <td style="text-align:left;"> initial biomass values of new age-1 cohorts. If `NA` or `NULL`, initial biomass will be calculated as in LANDIS-II Biomass Suc. Extension (see Scheller and Miranda, 2015 or `?LandR::.initiateNewCohorts`) </td>
+   <td style="text-align:left;"> TRUE </td>
   </tr>
   <tr>
    <td style="text-align:left;"> successionTimestep </td>
@@ -196,6 +202,7 @@ Summary of user-visible parameters (Table \@ref(tab:moduleParams-Biomass-regener
    <td style="text-align:left;"> NA </td>
    <td style="text-align:left;"> NA </td>
    <td style="text-align:left;"> defines the simulation time step, default is 10 years </td>
+   <td style="text-align:left;"> TRUE </td>
   </tr>
   <tr>
    <td style="text-align:left;"> .plots </td>
@@ -204,6 +211,7 @@ Summary of user-visible parameters (Table \@ref(tab:moduleParams-Biomass-regener
    <td style="text-align:left;"> NA </td>
    <td style="text-align:left;"> NA </td>
    <td style="text-align:left;"> Used by Plots function, which can be optionally used here </td>
+   <td style="text-align:left;"> TRUE </td>
   </tr>
   <tr>
    <td style="text-align:left;"> .plotInitialTime </td>
@@ -212,6 +220,7 @@ Summary of user-visible parameters (Table \@ref(tab:moduleParams-Biomass-regener
    <td style="text-align:left;"> NA </td>
    <td style="text-align:left;"> NA </td>
    <td style="text-align:left;"> This describes the simulation time at which the first plot event should occur </td>
+   <td style="text-align:left;"> TRUE </td>
   </tr>
   <tr>
    <td style="text-align:left;"> .plotInterval </td>
@@ -220,6 +229,7 @@ Summary of user-visible parameters (Table \@ref(tab:moduleParams-Biomass-regener
    <td style="text-align:left;"> NA </td>
    <td style="text-align:left;"> NA </td>
    <td style="text-align:left;"> This describes the simulation time interval between plot events </td>
+   <td style="text-align:left;"> TRUE </td>
   </tr>
   <tr>
    <td style="text-align:left;"> .saveInitialTime </td>
@@ -228,6 +238,7 @@ Summary of user-visible parameters (Table \@ref(tab:moduleParams-Biomass-regener
    <td style="text-align:left;"> NA </td>
    <td style="text-align:left;"> NA </td>
    <td style="text-align:left;"> This describes the simulation time at which the first save event should occur </td>
+   <td style="text-align:left;"> TRUE </td>
   </tr>
   <tr>
    <td style="text-align:left;"> .saveInterval </td>
@@ -236,6 +247,7 @@ Summary of user-visible parameters (Table \@ref(tab:moduleParams-Biomass-regener
    <td style="text-align:left;"> NA </td>
    <td style="text-align:left;"> NA </td>
    <td style="text-align:left;"> This describes the simulation time interval between save events </td>
+   <td style="text-align:left;"> TRUE </td>
   </tr>
   <tr>
    <td style="text-align:left;"> .useCache </td>
@@ -244,6 +256,7 @@ Summary of user-visible parameters (Table \@ref(tab:moduleParams-Biomass-regener
    <td style="text-align:left;"> NA </td>
    <td style="text-align:left;"> NA </td>
    <td style="text-align:left;"> Should this entire module be run with caching activated? This is generally intended for data-type modules, where stochasticity and time are not relevant </td>
+   <td style="text-align:left;"> TRUE </td>
   </tr>
 </tbody>
 </table>
