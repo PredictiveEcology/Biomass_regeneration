@@ -2,6 +2,7 @@ Known issues: <https://github.com/PredictiveEcology/Biomass_regeneration/issues>
 
 # Biomass_regeneration (development version)
 
+- The README shows the module's events, the objects each reads and writes, and a figure per event, generated from the code (needs SpaDES.core 3.2.1.9068 or later; older versions leave them out).
 - `SpaDES.core` is now in `reqdPkgs` (`scheduleEvent()`, `P()` are used).
 
 # Biomass_regeneration 1.1.0

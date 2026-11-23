@@ -104,6 +104,27 @@ knitr::kable(df_outputs, caption = "List of (ref:Biomass-regeneration) outputs a
   kableExtra::kable_styling(latex_options = "scale_down", full_width = TRUE)
 ```
 
+### Events
+
+```{r eventFlowCheck-Biomass-regeneration, include = FALSE, eval = TRUE, cache = FALSE}
+## the generated figures need SpaDES.core 3.2.1.9068 or later; older versions skip them
+.efOK <- utils::packageVersion("SpaDES.core") >= "3.2.1.9068"
+```
+
+```{r eventFlow-Biomass-regeneration, echo = FALSE, eval = .efOK, cache = FALSE, out.width = "100%", fig.pos = "H", fig.cap = "(ref:Biomass-regeneration) events, as read from the module code with its default parameters."}
+ef <- tryCatch(SpaDES.core::moduleEventFlow("Biomass_regeneration", path = ".."), error = function(e) e)
+SpaDES.core::includeModuleEventFlow(ef, "figures/Biomass_regeneration_eventFlow.png")
+```
+
+```{r eventObjects-Biomass-regeneration, echo = FALSE, eval = .efOK, cache = FALSE}
+SpaDES.core::kableModuleObjects(ef, caption = "Where each object of (ref:Biomass-regeneration) is written and read, in run order.",
+                                lead = "Table \\@ref(tab:eventObjects-Biomass-regeneration) lists, for each object, the code that writes it and the code that only reads it.")
+```
+
+```{r eventFigures-Biomass-regeneration, echo = FALSE, eval = .efOK, cache = FALSE, results = "asis"}
+SpaDES.core::moduleEventFigures(ef, figDir = "figures", level = 4)
+```
+
 ### Links to other modules
 
 Primarily used with the LandR Biomass suite of modules, namely [Biomass_core](https://github.com/PredictiveEcology/Biomass_core).
