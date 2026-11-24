@@ -1,7 +1,7 @@
 ---
 title: "LandR _Biomass_regeneration_ Manual"
 subtitle: "v.1.1.0.9001"
-date: "Last updated: 2026-11-05"
+date: "Last updated: 2026-11-24"
 output:
   bookdown::html_document2:
     toc: true
@@ -317,6 +317,120 @@ Description of the module outputs (Table \@ref(tab:moduleOutputs-Biomass-regener
   </tr>
 </tbody>
 </table>
+
+### Events
+
+
+
+<div class="figure">
+<img src="figures/Biomass_regeneration_eventFlow.png" alt="(ref:Biomass-regeneration) events, as read from the module code with its default parameters." width="100%" />
+<p class="caption">(\#fig:eventFlow-Biomass-regeneration)(ref:Biomass-regeneration) events, as read from the module code with its default parameters.</p>
+</div>
+
+Table \@ref(tab:eventObjects-Biomass-regeneration) lists, for each object, the code that writes it and the code that only reads it.
+
+<table class="table" style="width: auto !important; border-bottom: 0;">
+<caption>(\#tab:eventObjects-Biomass-regeneration)Where each object of (ref:Biomass-regeneration) is written and read, in run order.</caption>
+ <thead>
+  <tr>
+   <th style="text-align:left;"> Object </th>
+   <th style="text-align:left;"> Written by </th>
+   <th style="text-align:left;"> Read by </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr grouplength="6"><td colspan="3" style="border-bottom: 1px solid;"><strong>Inputs</strong></td></tr>
+<tr>
+   <td style="text-align:left;padding-left: 2em;" indentlevel="1"> inactivePixelIndex </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;"> fireDisturbance </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;padding-left: 2em;" indentlevel="1"> rasterToMatch </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;"> fireDisturbance </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;padding-left: 2em;" indentlevel="1"> rstCurrentBurn </td>
+   <td style="text-align:left;">  </td>
+   <td style="text-align:left;"> fireDisturbance </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;padding-left: 2em;" indentlevel="1"> species </td>
+   <td style="text-align:left;"> .inputObjects (default) </td>
+   <td style="text-align:left;"> fireDisturbance </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;padding-left: 2em;" indentlevel="1"> speciesEcoregion </td>
+   <td style="text-align:left;"> .inputObjects (default) </td>
+   <td style="text-align:left;"> fireDisturbance </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;padding-left: 2em;" indentlevel="1"> sufficientLight </td>
+   <td style="text-align:left;"> .inputObjects (default) </td>
+   <td style="text-align:left;"> fireDisturbance </td>
+  </tr>
+  <tr grouplength="3"><td colspan="3" style="border-bottom: 1px solid;"><strong>Inputs the module also updates</strong></td></tr>
+<tr>
+   <td style="text-align:left;padding-left: 2em;" indentlevel="1"> cohortData </td>
+   <td style="text-align:left;"> fireDisturbance </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;padding-left: 2em;" indentlevel="1"> pixelGroupMap </td>
+   <td style="text-align:left;"> fireDisturbance </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;padding-left: 2em;" indentlevel="1"> treedFirePixelTableSinceLastDisp </td>
+   <td style="text-align:left;"> .inputObjects (default), fireDisturbance </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+  <tr grouplength="5"><td colspan="3" style="border-bottom: 1px solid;"><strong>Outputs</strong></td></tr>
+<tr>
+   <td style="text-align:left;padding-left: 2em;" indentlevel="1"> lastFireYear </td>
+   <td style="text-align:left;"> fireDisturbance </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;padding-left: 2em;" indentlevel="1"> postFireRegenSummary </td>
+   <td style="text-align:left;"> fireDisturbance </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;padding-left: 2em;" indentlevel="1"> serotinyResproutSuccessPixels </td>
+   <td style="text-align:left;"> fireDisturbance </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;padding-left: 2em;" indentlevel="1"> severityBMap </td>
+   <td style="text-align:left;"> fireDisturbance </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;padding-left: 2em;" indentlevel="1"> severityData </td>
+   <td style="text-align:left;"> fireDisturbance </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+</tbody>
+<tfoot><tr><td style="padding: 0; " colspan="100%">
+<sup></sup> Not shown, touching no object in the metadata: init.</td></tr></tfoot>
+</table>
+
+
+#### .inputObjects {-}
+
+during simInit: defaults for inputs not supplied
+
+![](figures/Biomass_regeneration_io_.inputObjects.png){width=100%}
+
+
+
+#### fireDisturbance {-}
+
+every year (fireTimestep); first at start + 1 year (fireInitialTime)
+
+![](figures/Biomass_regeneration_io_fireDisturbance.png){width=100%}
 
 ### Links to other modules
 
